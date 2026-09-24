@@ -37,7 +37,7 @@
                     @endif
 
 
-                        {{-- Logo Kota Bontang --}}
+                        {{-- Logo Aplikasi Absensi Apel --}}
                         <div
                             class="
                                 shrink-0
@@ -50,8 +50,8 @@
                         >
 
                             <img
-                                src="{{ asset('images/logo-bontang.png') }}"
-                                alt="Logo Kota Bontang"
+                                src="{{ asset('images/logo_absensi_apel.svg') }}"
+                                alt="Logo Absensi Apel BPKAD"
                                 class="
                                     w-full
                                     h-full
@@ -542,6 +542,29 @@
                     </a>
 
 
+                    <a
+                        href="{{ route('admin.simulasi.edit') }}"
+                        class="
+                            flex
+                            items-center
+                            h-full
+                            px-4
+                            text-sm
+                            font-medium
+                            border-b-2
+                            transition
+
+                            {{
+                                request()->routeIs('admin.simulasi.*')
+                                    ? 'border-amber-500 text-slate-900'
+                                    : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                            }}
+                        "
+                    >
+                        Simulasi Apel
+                    </a>
+
+
 
                 {{-- ====================================================== --}}
                 {{-- PEGAWAI --}}
@@ -774,6 +797,28 @@
                     "
                 >
                     QR Code Apel
+                </a>
+
+
+                <a
+                    href="{{ route('admin.simulasi.edit') }}"
+                    class="
+                        block
+                        px-4
+                        py-3
+                        rounded-lg
+                        text-sm
+                        font-medium
+                        transition
+
+                        {{
+                            request()->routeIs('admin.simulasi.*')
+                                ? 'bg-slate-100 text-slate-900'
+                                : 'text-slate-600 hover:bg-slate-50'
+                        }}
+                    "
+                >
+                    Simulasi Apel
                 </a>
 
 

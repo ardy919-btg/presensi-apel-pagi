@@ -56,8 +56,8 @@
                         <div class="shrink-0">
 
                             <img
-                                src="{{ asset('images/logo-bontang.png') }}"
-                                alt="Logo Kota Bontang"
+                                src="{{ asset('images/logo_absensi_apel.svg') }}"
+                                alt="Logo Absensi Apel BPKAD"
                                 class="w-14 h-14 object-contain"
                             >
 
@@ -401,8 +401,8 @@
                             <div class="shrink-0 w-10 h-10 sm:w-12 sm:h-12">
 
                                 <img
-                                    src="{{ asset('images/logo-bontang.png') }}"
-                                    alt="Logo Kota Bontang"
+                                    src="{{ asset('images/logo_absensi_apel.svg') }}"
+                                    alt="Logo Absensi Apel BPKAD"
                                     class="w-full h-full object-contain"
                                 >
 
@@ -466,8 +466,8 @@
                                 text-slate-500
                             "
                         >
-                            Gunakan email Administrator atau NIP pegawai
-                            untuk mengakses sistem.
+                            Gunakan Nama atau NIP pegawai (atau email
+                            Administrator) untuk mengakses sistem.
                         </p>
 
                     </div>
@@ -497,7 +497,47 @@
 
 
                         {{-- Login --}}
-                        <div>
+                        <div
+                            x-data="{
+                                query: @js(old('login', '')),
+                                items: [],
+                                open: false,
+                                loading: false,
+                                timer: null,
+                                onInput() {
+                                    this.open = false;
+                                    clearTimeout(this.timer);
+                                    const term = this.query.trim();
+                                    if (term.length < 2) {
+                                        this.items = [];
+                                        return;
+                                    }
+                                    this.timer = setTimeout(() => this.fetchSuggestions(term), 250);
+                                },
+                                async fetchSuggestions(term) {
+                                    this.loading = true;
+                                    try {
+                                        const res = await fetch(
+                                            '{{ route('login.suggestions') }}?q=' + encodeURIComponent(term),
+                                            { headers: { 'Accept': 'application/json' } }
+                                        );
+                                        this.items = res.ok ? await res.json() : [];
+                                        this.open = this.items.length > 0;
+                                    } catch (e) {
+                                        this.items = [];
+                                    } finally {
+                                        this.loading = false;
+                                    }
+                                },
+                                select(item) {
+                                    this.query = item.nip;
+                                    this.items = [];
+                                    this.open = false;
+                                    $nextTick(() => document.getElementById('password')?.focus());
+                                },
+                            }"
+                            @click.outside="open = false"
+                        >
 
                             <label
                                 for="login"
@@ -508,7 +548,7 @@
                                     text-slate-700
                                 "
                             >
-                                Email atau NIP
+                                Nama, NIP, atau Email
                             </label>
 
 
@@ -549,11 +589,13 @@
                                     id="login"
                                     type="text"
                                     name="login"
-                                    value="{{ old('login') }}"
+                                    x-model="query"
+                                    @input="onInput"
+                                    @focus="if (items.length) open = true"
                                     required
                                     autofocus
-                                    autocomplete="username"
-                                    placeholder="Email admin atau NIP pegawai"
+                                    autocomplete="off"
+                                    placeholder="Nama atau NIP Pegawai"
                                     class="
                                         block
                                         w-full
@@ -570,6 +612,62 @@
                                         focus:ring-slate-900
                                     "
                                 >
+
+
+                                {{-- Dropdown saran Nama/NIP --}}
+                                <div
+                                    x-show="open"
+                                    x-transition
+                                    style="display: none;"
+                                    class="
+                                        absolute
+                                        z-10
+                                        mt-2
+                                        w-full
+                                        rounded-xl
+                                        border
+                                        border-slate-200
+                                        bg-white
+                                        shadow-lg
+                                        overflow-hidden
+                                    "
+                                >
+
+                                    <template x-for="item in items" :key="item.nip">
+
+                                        <button
+                                            type="button"
+                                            @click="select(item)"
+                                            class="
+                                                block
+                                                w-full
+                                                text-left
+                                                px-4
+                                                py-3
+                                                hover:bg-slate-50
+                                                active:bg-slate-100
+                                                border-b
+                                                border-slate-100
+                                                last:border-b-0
+                                                transition
+                                            "
+                                        >
+
+                                            <p
+                                                class="text-sm font-semibold text-slate-900"
+                                                x-text="item.name"
+                                            ></p>
+
+                                            <p
+                                                class="mt-0.5 text-xs text-slate-500"
+                                                x-text="'NIP ' + item.nip"
+                                            ></p>
+
+                                        </button>
+
+                                    </template>
+
+                                </div>
 
                             </div>
 
@@ -728,8 +826,11 @@
                         </div>
 
 
-                        {{-- Remember --}}
-                        <div class="mt-5">
+                        {{-- Remember & Lupa Password --}}
+                        <div
+                            x-data="{ lupaPasswordOpen: false }"
+                            class="mt-5 flex items-center justify-between gap-3"
+                        >
 
                             <label
                                 for="remember_me"
@@ -764,6 +865,131 @@
 
                             </label>
 
+
+                            <button
+                                type="button"
+                                @click="lupaPasswordOpen = true"
+                                class="
+                                    text-sm
+                                    font-medium
+                                    text-indigo-600
+                                    hover:text-indigo-800
+                                    transition
+                                "
+                            >
+                                Lupa Password?
+                            </button>
+
+
+                            {{-- ====================================================== --}}
+                            {{-- PANEL LUPA PASSWORD --}}
+                            {{-- ====================================================== --}}
+
+                            <div
+                                x-show="lupaPasswordOpen"
+                                x-cloak
+                                class="fixed inset-0 z-[110] flex items-center justify-center p-4"
+                            >
+
+                                <div
+                                    x-show="lupaPasswordOpen"
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0"
+                                    x-transition:enter-end="opacity-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100"
+                                    x-transition:leave-end="opacity-0"
+                                    class="absolute inset-0 bg-slate-900/50 backdrop-blur-[2px]"
+                                    @click="lupaPasswordOpen = false"
+                                ></div>
+
+
+                                <div
+                                    x-show="lupaPasswordOpen"
+                                    x-transition:enter="transition duration-160"
+                                    x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-120"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-95"
+                                    style="transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);"
+                                    @keydown.escape.window="lupaPasswordOpen = false"
+                                    class="relative w-full max-w-sm rounded-2xl bg-white shadow-2xl overflow-hidden text-left"
+                                >
+
+                                    <div
+                                        class="
+                                            px-5 py-4 flex items-center gap-3 text-white
+                                            bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600
+                                        "
+                                    >
+
+                                        <div class="h-10 w-10 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+
+                                            <svg
+                                                class="w-5 h-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+                                                />
+                                            </svg>
+
+                                        </div>
+
+                                        <h3 class="text-base font-semibold">
+                                            Lupa Password?
+                                        </h3>
+
+                                    </div>
+
+
+                                    <div class="px-5 py-4">
+
+                                        <p class="text-sm text-slate-600 leading-relaxed">
+                                            Untuk alasan keamanan, reset password tidak bisa
+                                            dilakukan sendiri lewat halaman ini. Silakan
+                                            hubungi <span class="font-semibold text-slate-800">Petugas Admin Apel Pagi</span>
+                                            untuk meminta password Anda direset.
+                                        </p>
+
+                                    </div>
+
+
+                                    <div
+                                        class="
+                                            border-t border-slate-100
+                                            bg-slate-50/60
+                                            px-5 py-3
+                                            flex items-center justify-end
+                                        "
+                                    >
+
+                                        <button
+                                            type="button"
+                                            @click="lupaPasswordOpen = false"
+                                            class="
+                                                rounded-md px-3.5 py-1.5
+                                                text-sm font-semibold text-white
+                                                bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600
+                                                shadow-sm shadow-indigo-300/50
+                                                hover:opacity-90 transition
+                                            "
+                                        >
+                                            Mengerti
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
                         </div>
 
 
@@ -792,6 +1018,68 @@
                         >
                             Masuk ke Sistem
                         </button>
+
+
+                        @if(config('services.google.client_id'))
+
+                            {{-- Divider --}}
+                            <div class="mt-6 flex items-center gap-3">
+
+                                <div class="h-px flex-1 bg-slate-200"></div>
+
+                                <span class="text-xs text-slate-400">
+                                    atau
+                                </span>
+
+                                <div class="h-px flex-1 bg-slate-200"></div>
+
+                            </div>
+
+
+                            {{-- Google Sign-In --}}
+                            <div class="mt-4 flex justify-center">
+                                <div id="google-signin-button"></div>
+                            </div>
+
+                            <form
+                                id="google-login-form"
+                                method="POST"
+                                action="{{ route('login.google') }}"
+                                class="hidden"
+                            >
+                                @csrf
+                                <input type="hidden" name="credential" id="google-credential">
+                            </form>
+
+                            <script src="https://accounts.google.com/gsi/client?hl=id" async defer></script>
+                            <script>
+                                window.addEventListener('load', function () {
+                                    if (!window.google || !google.accounts || !google.accounts.id) {
+                                        return;
+                                    }
+
+                                    google.accounts.id.initialize({
+                                        client_id: @js(config('services.google.client_id')),
+                                        callback: function (response) {
+                                            document.getElementById('google-credential').value = response.credential;
+                                            document.getElementById('google-login-form').submit();
+                                        },
+                                    });
+
+                                    google.accounts.id.renderButton(
+                                        document.getElementById('google-signin-button'),
+                                        {
+                                            theme: 'outline',
+                                            size: 'large',
+                                            width: 320,
+                                            text: 'signin_with',
+                                            locale: 'id',
+                                        }
+                                    );
+                                });
+                            </script>
+
+                        @endif
 
 
                         {{-- Notice --}}

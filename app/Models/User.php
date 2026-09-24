@@ -25,9 +25,16 @@ class User extends Authenticatable
     'email',
     'jabatan',
     'bidang',
+    'pangkat_golongan',
+    'tanggal_lahir',
+    'jenis_kelamin',
+    'pendidikan',
+    'pendidikan_detail',
+    'golongan_darah',
     'role',
     'status',
     'password',
+    'must_change_password',
 ];
     /**
      * The attributes that should be hidden for serialization.
@@ -48,8 +55,27 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'tanggal_lahir' => 'date',
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
         ];
+    }
+
+    /**
+     * Password default akun baru / hasil reset, dibaca dari .env
+     * (DEFAULT_PASSWORD) supaya tidak tertulis di source code.
+     */
+    public static function passwordDefault(): string
+    {
+        $password = config('attendance.default_password');
+
+        if (! $password) {
+            throw new \RuntimeException(
+                'DEFAULT_PASSWORD belum diisi di file .env.'
+            );
+        }
+
+        return (string) $password;
     }
 
     public function absensis()

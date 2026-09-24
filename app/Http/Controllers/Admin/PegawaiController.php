@@ -177,6 +177,47 @@ class PegawaiController extends Controller
                 'max:255',
             ],
 
+            'pangkat_golongan' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'tanggal_lahir' => [
+                'nullable',
+                'date',
+            ],
+
+            'jenis_kelamin' => [
+                'nullable',
+                Rule::in([
+                    'Laki-Laki',
+                    'Perempuan',
+                ]),
+            ],
+
+            'pendidikan' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'pendidikan_detail' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'golongan_darah' => [
+                'nullable',
+                Rule::in([
+                    'A',
+                    'B',
+                    'AB',
+                    'O',
+                ]),
+            ],
+
             'password' => [
                 'required',
                 'string',
@@ -199,6 +240,18 @@ class PegawaiController extends Controller
             'jabatan' => $request->jabatan,
 
             'bidang' => $request->bidang,
+
+            'pangkat_golongan' => $request->pangkat_golongan,
+
+            'tanggal_lahir' => $request->tanggal_lahir,
+
+            'jenis_kelamin' => $request->jenis_kelamin,
+
+            'pendidikan' => $request->pendidikan,
+
+            'pendidikan_detail' => $request->pendidikan_detail,
+
+            'golongan_darah' => $request->golongan_darah,
 
             'role' => 'pegawai',
 
@@ -317,6 +370,47 @@ class PegawaiController extends Controller
                 'max:255',
             ],
 
+            'pangkat_golongan' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'tanggal_lahir' => [
+                'nullable',
+                'date',
+            ],
+
+            'jenis_kelamin' => [
+                'nullable',
+                Rule::in([
+                    'Laki-Laki',
+                    'Perempuan',
+                ]),
+            ],
+
+            'pendidikan' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'pendidikan_detail' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'golongan_darah' => [
+                'nullable',
+                Rule::in([
+                    'A',
+                    'B',
+                    'AB',
+                    'O',
+                ]),
+            ],
+
             'status' => [
                 'required',
                 Rule::in([
@@ -359,6 +453,18 @@ class PegawaiController extends Controller
             'jabatan' => $request->jabatan,
 
             'bidang' => $request->bidang,
+
+            'pangkat_golongan' => $request->pangkat_golongan,
+
+            'tanggal_lahir' => $request->tanggal_lahir,
+
+            'jenis_kelamin' => $request->jenis_kelamin,
+
+            'pendidikan' => $request->pendidikan,
+
+            'pendidikan_detail' => $request->pendidikan_detail,
+
+            'golongan_darah' => $request->golongan_darah,
 
             'status' => $request->status,
         ];
@@ -425,6 +531,37 @@ class PegawaiController extends Controller
             ->with(
                 'success',
                 'Data pegawai berhasil dihapus.'
+            );
+    }
+
+
+    /**
+     * Reset password pegawai ke password default.
+     */
+    public function resetPassword(User $pegawai)
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Yang Direset Adalah Pegawai
+        |--------------------------------------------------------------------------
+        */
+
+        if ($pegawai->role !== 'pegawai') {
+            abort(403);
+        }
+
+
+        $pegawai->update([
+            'password' => User::passwordDefault(),
+            'must_change_password' => true,
+        ]);
+
+
+        return redirect()
+            ->route('admin.pegawai.index')
+            ->with(
+                'success',
+                'Password ' . $pegawai->name . ' berhasil direset ke password default.'
             );
     }
 }

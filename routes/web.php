@@ -1,18 +1,19 @@
 <?php
 
-use App\Helpers\AttendanceTime;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PegawaiController;
 use App\Http\Controllers\Admin\QrCodeController;
 use App\Http\Controllers\Admin\AbsensiController as AdminAbsensiController;
+use App\Http\Controllers\Admin\SimulasiController;
+use App\Http\Controllers\Admin\GoogleDriveController;
 
 use App\Http\Controllers\PegawaiImportController;
 
 use App\Http\Controllers\Pegawai\AbsensiController;
-use App\Http\Controllers\Pegawai\QrCodeController as PegawaiQrCodeController;
 use App\Http\Controllers\Pegawai\DashboardController as PegawaiDashboardController;
 
 
@@ -23,7 +24,13 @@ use App\Http\Controllers\Pegawai\DashboardController as PegawaiDashboardControll
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    if (! Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    return Auth::user()->role === 'admin'
+        ? redirect()->route('admin.dashboard')
+        : redirect()->route('pegawai.absensi.index');
 });
 
 
@@ -116,6 +123,12 @@ Route::middleware([
         ]);
 
 
+        Route::put(
+            '/pegawai/{pegawai}/reset-password',
+            [PegawaiController::class, 'resetPassword']
+        )->name('pegawai.reset-password');
+
+
         /*
         |--------------------------------------------------------------------------
         | Riwayat Absensi Apel Pagi
@@ -146,6 +159,12 @@ Route::middleware([
         )->name('laporan.pdf');
 
 
+        Route::get(
+            '/laporan/excel',
+            [AdminAbsensiController::class, 'exportExcel']
+        )->name('laporan.excel');
+
+
         /*
         |--------------------------------------------------------------------------
         | Detail Absensi Apel Pagi
@@ -156,6 +175,66 @@ Route::middleware([
             '/absensi/{absensi}',
             [AdminAbsensiController::class, 'show']
         )->name('absensi.show');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Simulasi Apel Pagi (Uji Coba Di Luar Hari Senin)
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/simulasi',
+            [SimulasiController::class, 'edit']
+        )->name('simulasi.edit');
+
+        Route::put(
+            '/simulasi',
+            [SimulasiController::class, 'update']
+        )->name('simulasi.update');
+
+        Route::post(
+            '/simulasi/nonaktifkan',
+            [SimulasiController::class, 'nonaktifkan']
+        )->name('simulasi.nonaktifkan');
+
+        Route::delete(
+            '/simulasi/data',
+            [SimulasiController::class, 'hapusData']
+        )->name('simulasi.hapus-data');
+
+
+        Route::put(
+            '/pengaturan/lokasi',
+            [SimulasiController::class, 'updateLokasi']
+        )->name('pengaturan.lokasi.update');
+
+        Route::put(
+            '/pengaturan/retensi',
+            [SimulasiController::class, 'updateRetensi']
+        )->name('pengaturan.retensi.update');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Penyimpanan Foto Google Drive
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/drive/connect',
+            [GoogleDriveController::class, 'connect']
+        )->name('drive.connect');
+
+        Route::get(
+            '/drive/callback',
+            [GoogleDriveController::class, 'callback']
+        )->name('drive.callback');
+
+        Route::post(
+            '/drive/disconnect',
+            [GoogleDriveController::class, 'disconnect']
+        )->name('drive.disconnect');
 
 
         /*
@@ -241,170 +320,29 @@ Route::middleware([
 
         /*
         |--------------------------------------------------------------------------
-        | Scan QR Code Apel Pagi
+        | Scan QR Code Apel Pagi (Sudah Tidak Wajib)
+        |--------------------------------------------------------------------------
+        |
+        | Pegawai tidak lagi perlu scan QR untuk mengisi Apel Pagi -- halaman
+        | Status Apel (pegawai.absensi.index) langsung menampilkan form
+        | pengisian. Route ini dipertahankan hanya supaya QR fisik yang
+        | mungkin sudah tercetak/terpasang tidak berujung 404.
         |--------------------------------------------------------------------------
         */
 
-        Route::get(
-            '/qrcode/{token}',
-            [PegawaiQrCodeController::class, 'verify']
-        )->name('qrcode.verify');
+        Route::get('/qrcode/{token}', function () {
+            return redirect()->route('pegawai.absensi.index');
+        })->name('qrcode.verify');
 
 
         /*
         |--------------------------------------------------------------------------
-        | Verifikasi Setelah Scan QR
+        | Halaman Verifikasi Lama (Sudah Digabung Ke Status Apel)
         |--------------------------------------------------------------------------
         */
 
         Route::get('/verifikasi', function () {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Waktu Aplikasi / Simulasi
-            |--------------------------------------------------------------------------
-            */
-
-            $now = AttendanceTime::now();
-            $today = AttendanceTime::today();
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Harus Hari Senin
-            |--------------------------------------------------------------------------
-            */
-
-            if (!$today->isMonday()) {
-
-                session()->forget([
-                    'qr_valid',
-                    'qr_tipe',
-                    'qr_token',
-                    'qr_valid_until',
-                ]);
-
-                return redirect()
-                    ->route('pegawai.dashboard')
-                    ->with(
-                        'error',
-                        'Absensi Apel Pagi hanya dapat dilakukan pada hari Senin.'
-                    );
-            }
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Batas Waktu Absensi
-            |--------------------------------------------------------------------------
-            |
-            | Mulai pukul 07:45 WITA halaman verifikasi tidak dapat dibuka.
-            |
-            */
-
-            $jamTutup = config(
-                'attendance.end_time',
-                '07:45'
-            );
-
-
-            $batasAbsensi = $today
-                ->copy()
-                ->setTimeFromTimeString(
-                    $jamTutup
-                );
-
-
-            if ($now->greaterThanOrEqualTo($batasAbsensi)) {
-
-                session()->forget([
-                    'qr_valid',
-                    'qr_tipe',
-                    'qr_token',
-                    'qr_valid_until',
-                ]);
-
-                return redirect()
-                    ->route('pegawai.dashboard')
-                    ->with(
-                        'error',
-                        'Absensi Apel Pagi telah ditutup pada pukul '
-                        . $batasAbsensi->format('H:i')
-                        . ' WITA.'
-                    );
-            }
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | QR Belum Diverifikasi
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                !session('qr_valid') ||
-                !session('qr_valid_until')
-            ) {
-
-                session()->forget([
-                    'qr_valid',
-                    'qr_tipe',
-                    'qr_token',
-                    'qr_valid_until',
-                ]);
-
-                return redirect()
-                    ->route('pegawai.dashboard')
-                    ->with(
-                        'error',
-                        'Silakan scan QR Code Apel Pagi terlebih dahulu.'
-                    );
-            }
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Sesi QR Sudah Kedaluwarsa
-            |--------------------------------------------------------------------------
-            |
-            | Masa berlaku QR tetap menggunakan waktu nyata.
-            |
-            | Jadi setelah QR dipindai, pegawai tetap hanya mempunyai
-            | waktu 3 menit untuk mengirim absensi.
-            |
-            */
-
-            if (
-                now()->timestamp >
-                session('qr_valid_until')
-            ) {
-
-                session()->forget([
-                    'qr_valid',
-                    'qr_tipe',
-                    'qr_token',
-                    'qr_valid_until',
-                ]);
-
-                return redirect()
-                    ->route('pegawai.dashboard')
-                    ->with(
-                        'error',
-                        'Sesi QR Code Apel Pagi telah berakhir. Silakan scan QR kembali.'
-                    );
-            }
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | QR Masih Valid
-            |--------------------------------------------------------------------------
-            */
-
-            return view(
-                'pegawai.verifikasi'
-            );
-
+            return redirect()->route('pegawai.absensi.index');
         })->name('verifikasi');
     });
 

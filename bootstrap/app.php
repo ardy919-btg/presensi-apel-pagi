@@ -32,6 +32,18 @@ return Application::configure(basePath: dirname(__DIR__))
             'pegawai' => \App\Http\Middleware\PegawaiMiddleware::class,
         ]);
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Wajib Ganti Password Default
+        |--------------------------------------------------------------------------
+        */
+
+        $middleware->appendToGroup(
+            'web',
+            \App\Http\Middleware\EnsurePasswordChanged::class
+        );
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

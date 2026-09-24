@@ -51,7 +51,13 @@ class ProfileUpdateRequest extends FormRequest
 
         return [
             'name' => [
-                'sometimes',
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'jabatan' => [
+                'nullable',
                 'string',
                 'max:255',
             ],

@@ -21,6 +21,17 @@
     </title>
 
     <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ asset('images/logo_absensi_apel.svg') }}"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        href="{{ asset('images/logo_absensi_apel.svg') }}"
+    >
+
+    <link
         rel="preconnect"
         href="https://fonts.bunny.net"
     >
@@ -40,6 +51,10 @@
 <body class="font-sans antialiased bg-slate-100">
 
     {{ $slot }}
+
+
+    <x-toast-container />
+    <x-confirm-modal />
 
 </body>
 

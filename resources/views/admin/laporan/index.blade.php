@@ -192,6 +192,13 @@
                                     </option>
 
                                     <option
+                                        value="cuti"
+                                        {{ request('status') === 'cuti' ? 'selected' : '' }}
+                                    >
+                                        Cuti
+                                    </option>
+
+                                    <option
                                         value="lainnya"
                                         {{ request('status') === 'lainnya' ? 'selected' : '' }}
                                     >
@@ -260,11 +267,40 @@
                                     <path
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
-                                        d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"
+                                        d="M12 16v-8m0 8l-3.5-3.5M12 16l3.5-3.5M5 20h14"
                                     />
                                 </svg>
 
-                                Export PDF
+                                Download PDF
+
+                            </a>
+
+
+                            <a
+                                href="{{ route('admin.laporan.excel', request()->query()) }}"
+                                class="inline-flex items-center gap-2
+                                       px-5 py-2.5
+                                       bg-green-600 hover:bg-green-700
+                                       text-white font-semibold
+                                       rounded-lg transition"
+                            >
+
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M12 16v-8m0 8l-3.5-3.5M12 16l3.5-3.5M5 20h14"
+                                    />
+                                </svg>
+
+                                Download Excel
 
                             </a>
 
@@ -281,7 +317,7 @@
             {{-- STATISTIK --}}
             {{-- ========================= --}}
 
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9 gap-4 mb-6">
 
 
                 {{-- Total --}}
@@ -363,6 +399,20 @@
 
                     <p class="mt-2 text-2xl font-bold text-indigo-600">
                         {{ $totalDinasLuar }}
+                    </p>
+
+                </div>
+
+
+                {{-- Cuti --}}
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
+
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Cuti
+                    </p>
+
+                    <p class="mt-2 text-2xl font-bold text-teal-600">
+                        {{ $totalCuti }}
                     </p>
 
                 </div>
@@ -583,6 +633,17 @@
                                                     Dinas Luar
                                                 </span>
 
+                                            @elseif($absensi->status === 'cuti')
+
+                                                <span
+                                                    class="inline-flex px-3 py-1
+                                                           text-xs font-semibold
+                                                           bg-teal-100 text-teal-700
+                                                           rounded-full"
+                                                >
+                                                    Cuti
+                                                </span>
+
                                             @elseif($absensi->status === 'lainnya')
 
                                                 <span
@@ -639,6 +700,7 @@
                                                         'izin',
                                                         'sakit',
                                                         'dinas_luar',
+                                                        'cuti',
                                                         'lainnya'
                                                     ]
                                                 )
@@ -655,6 +717,7 @@
                                                                 'izin' => 'Izin',
                                                                 'sakit' => 'Sakit',
                                                                 'dinas_luar' => 'Dinas Luar',
+                                                                'cuti' => 'Cuti',
                                                                 'lainnya' => 'Lainnya',
                                                                 default => '-',
                                                             }

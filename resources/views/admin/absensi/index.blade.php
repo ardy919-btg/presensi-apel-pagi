@@ -26,21 +26,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
 
-            {{-- ========================= --}}
-            {{-- PESAN SUKSES --}}
-            {{-- ========================= --}}
-
-            @if(session('success'))
-
-                <div
-                    class="mb-6 p-4 rounded-lg
-                           bg-green-100 text-green-700
-                           dark:bg-green-900/30 dark:text-green-300"
-                >
-                    {{ session('success') }}
-                </div>
-
-            @endif
 
 
             {{-- ========================= --}}
@@ -237,6 +222,13 @@
                                         {{ request('status') === 'dinas_luar' ? 'selected' : '' }}
                                     >
                                         Dinas Luar
+                                    </option>
+
+                                    <option
+                                        value="cuti"
+                                        {{ request('status') === 'cuti' ? 'selected' : '' }}
+                                    >
+                                        Cuti
                                     </option>
 
                                     <option
@@ -541,6 +533,19 @@
                                                     Dinas Luar
                                                 </span>
 
+                                            @elseif($absensi->status === 'cuti')
+
+                                                <span
+                                                    class="inline-flex px-3 py-1
+                                                           text-xs font-semibold
+                                                           rounded-full
+                                                           bg-teal-100 text-teal-700
+                                                           dark:bg-teal-900/40
+                                                           dark:text-teal-300"
+                                                >
+                                                    Cuti
+                                                </span>
+
                                             @elseif($absensi->status === 'lainnya')
 
                                                 <span
@@ -590,6 +595,19 @@
 
                                             @endif
 
+
+                                            @if($absensi->is_simulasi)
+
+                                                <span
+                                                    class="block mt-1 text-[10px] font-semibold
+                                                           text-amber-600 dark:text-amber-400"
+                                                    title="Data hasil simulasi, bukan Apel Pagi sungguhan"
+                                                >
+                                                    🧪 Simulasi
+                                                </span>
+
+                                            @endif
+
                                         </td>
 
 
@@ -599,13 +617,13 @@
                                             @if($absensi->foto_masuk)
 
                                                 <a
-                                                    href="{{ asset('storage/' . $absensi->foto_masuk) }}"
+                                                    href="{{ $absensi->foto_masuk_view_url }}"
                                                     target="_blank"
                                                     title="Selfie Apel"
                                                 >
 
                                                     <img
-                                                        src="{{ asset('storage/' . $absensi->foto_masuk) }}"
+                                                        src="{{ $absensi->foto_masuk_url }}"
                                                         alt="Selfie Apel"
                                                         class="w-14 h-14
                                                                mx-auto
@@ -682,6 +700,7 @@
                                                         'izin',
                                                         'sakit',
                                                         'dinas_luar',
+                                                        'cuti',
                                                         'lainnya'
                                                     ]
                                                 )
@@ -698,6 +717,7 @@
                                                                 'izin' => 'Izin',
                                                                 'sakit' => 'Sakit',
                                                                 'dinas_luar' => 'Dinas Luar',
+                                                                'cuti' => 'Cuti',
                                                                 'lainnya' => 'Lainnya',
                                                                 default => '-',
                                                             }

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\LaporanApelExport;
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiController extends Controller
 {
@@ -14,8 +16,23 @@ class AbsensiController extends Controller
      */
     private function baseQuery()
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Data Apel Pagi Senin + Hasil Simulasi
+        |--------------------------------------------------------------------------
+        |
+        | Data simulasi bisa bertanggal hari apa saja (bukan cuma Senin),
+        | jadi ikut disertakan lewat is_simulasi supaya tetap terlihat
+        | di Riwayat Apel admin.
+        |
+        */
+
         return Absensi::with('user')
-            ->whereRaw('DAYOFWEEK(tanggal) = 2');
+            ->where(function ($query) {
+
+                $query->whereRaw('DAYOFWEEK(tanggal) = 2')
+                    ->orWhere('is_simulasi', true);
+            });
     }
 
 
@@ -237,6 +254,14 @@ class AbsensiController extends Controller
             ->count();
 
 
+        $totalCuti = (clone $statistikQuery)
+            ->where(
+                'status',
+                'cuti'
+            )
+            ->count();
+
+
         $totalLainnya = (clone $statistikQuery)
             ->where(
                 'status',
@@ -300,6 +325,7 @@ class AbsensiController extends Controller
                 'totalIzin',
                 'totalSakit',
                 'totalDinasLuar',
+                'totalCuti',
                 'totalLainnya',
                 'totalAlpha'
             )
@@ -377,6 +403,14 @@ class AbsensiController extends Controller
             ->count();
 
 
+        $totalCuti = (clone $statistikQuery)
+            ->where(
+                'status',
+                'cuti'
+            )
+            ->count();
+
+
         $totalLainnya = (clone $statistikQuery)
             ->where(
                 'status',
@@ -442,6 +476,7 @@ class AbsensiController extends Controller
                 'totalIzin',
                 'totalSakit',
                 'totalDinasLuar',
+                'totalCuti',
                 'totalLainnya',
                 'totalAlpha'
             )
@@ -487,25 +522,85 @@ class AbsensiController extends Controller
 
 
     /**
+     * Export laporan Apel Pagi menjadi Excel.
+     */
+    public function exportExcel(Request $request)
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Query Data Excel
+        |--------------------------------------------------------------------------
+        */
+
+        $query = $this->baseQuery();
+
+        $this->applyFilter(
+            $query,
+            $request,
+            true
+        );
+
+
+        $laporan = $query
+            ->orderBy(
+                'tanggal',
+                'asc'
+            )
+            ->orderBy(
+                'jam_masuk',
+                'asc'
+            )
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Nama File
+        |--------------------------------------------------------------------------
+        */
+
+        $namaFile =
+            'laporan-apel-pagi-'
+            . now()->format(
+                'Y-m-d-His'
+            )
+            . '.xlsx';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Download Excel
+        |--------------------------------------------------------------------------
+        */
+
+        return Excel::download(
+            new LaporanApelExport($laporan),
+            $namaFile
+        );
+    }
+
+
+    /**
      * Menampilkan detail satu absensi Apel Pagi.
      */
     public function show(Absensi $absensi)
     {
         /*
         |--------------------------------------------------------------------------
-        | Pastikan Data Merupakan Hari Senin
+        | Pastikan Data Merupakan Hari Senin Atau Hasil Simulasi
         |--------------------------------------------------------------------------
         |
-        | Data absensi lama hari selain Senin tidak boleh dianggap
-        | sebagai data Apel Pagi.
+        | Data absensi hari selain Senin yang bukan hasil simulasi tidak
+        | boleh dianggap sebagai data Apel Pagi.
         |
         */
 
         if (
             !$absensi->tanggal ||
-            !\Carbon\Carbon::parse(
-                $absensi->tanggal
-            )->isMonday()
+            (
+                !\Carbon\Carbon::parse($absensi->tanggal)->isMonday() &&
+                !$absensi->is_simulasi
+            )
         ) {
 
             abort(

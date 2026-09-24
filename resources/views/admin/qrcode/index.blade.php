@@ -17,21 +17,6 @@
 
         <div class="max-w-3xl mx-auto px-4">
 
-            {{-- SUCCESS --}}
-            @if(session('success'))
-
-                <div
-                    class="mb-4 p-4
-                           bg-green-100 text-green-700
-                           dark:bg-green-900/30 dark:text-green-300
-                           rounded-lg"
-                >
-                    {{ session('success') }}
-                </div>
-
-            @endif
-
-
             {{-- CARD QR --}}
             <div
                 class="bg-white dark:bg-gray-800
@@ -50,8 +35,9 @@
                     class="mt-2
                            text-gray-500 dark:text-gray-400"
                 >
-                    QR Code ini digunakan oleh pegawai untuk membuka
-                    halaman absensi Apel Pagi setiap hari Senin.
+                    QR Code ini bersifat opsional -- sekarang pegawai bisa
+                    langsung mengisi absensi Apel Pagi setelah login,
+                    tanpa perlu scan QR.
                 </p>
 
 
@@ -69,7 +55,7 @@
                         class="font-semibold
                                text-blue-800 dark:text-blue-300"
                     >
-                        Cara Penggunaan
+                        Sudah Tidak Wajib
                     </p>
 
 
@@ -77,18 +63,10 @@
                         class="mt-2 text-sm
                                text-blue-700 dark:text-blue-400"
                     >
-                        Pegawai login menggunakan akun masing-masing,
-                        kemudian scan QR Code ini untuk membuka halaman
-                        verifikasi absensi Apel Pagi.
-                    </p>
-
-
-                    <p
-                        class="mt-2 text-sm
-                               text-blue-700 dark:text-blue-400"
-                    >
-                        QR Code bersifat permanen, tetapi proses absensi
-                        hanya dapat dilakukan pada hari Senin.
+                        Halaman "Status Apel" pegawai sekarang langsung
+                        menampilkan form absensi setelah login. QR Code
+                        ini tetap bisa dipindai (akan diarahkan ke halaman
+                        yang sama), tapi tidak lagi wajib digunakan.
                     </p>
 
                 </div>

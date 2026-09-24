@@ -88,16 +88,6 @@
         <div class="max-w-7xl mx-auto px-4">
 
 
-            {{-- NOTIFIKASI SUKSES --}}
-            @if(session('success'))
-
-                <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg">
-                    {{ session('success') }}
-                </div>
-
-            @endif
-
-
             {{-- NOTIFIKASI ERROR --}}
             @if($errors->any())
 
@@ -391,6 +381,26 @@
                                     Bidang
                                 </th>
 
+                                <th class="p-4 text-left font-semibold whitespace-nowrap">
+                                    Pangkat / Golongan
+                                </th>
+
+                                <th class="p-4 text-left font-semibold">
+                                    Tanggal Lahir
+                                </th>
+
+                                <th class="p-4 text-left font-semibold">
+                                    L/P
+                                </th>
+
+                                <th class="p-4 text-left font-semibold">
+                                    Pendidikan
+                                </th>
+
+                                <th class="p-4 text-left font-semibold whitespace-nowrap">
+                                    Gol. Darah
+                                </th>
+
                                 <th class="p-4 text-left font-semibold">
                                     Status
                                 </th>
@@ -484,6 +494,46 @@
                                     </td>
 
 
+                                    {{-- Pangkat / Golongan --}}
+                                    <td class="p-4 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+
+                                        {{ $item->pangkat_golongan ?: '-' }}
+
+                                    </td>
+
+
+                                    {{-- Tanggal Lahir --}}
+                                    <td class="p-4 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+
+                                        {{ optional($item->tanggal_lahir)->format('d-m-Y') ?: '-' }}
+
+                                    </td>
+
+
+                                    {{-- Jenis Kelamin --}}
+                                    <td class="p-4 text-gray-700 dark:text-gray-300">
+
+                                        {{ $item->jenis_kelamin ? ($item->jenis_kelamin === 'Laki-Laki' ? 'L' : 'P') : '-' }}
+
+                                    </td>
+
+
+                                    {{-- Pendidikan --}}
+                                    <td class="p-4 text-gray-700 dark:text-gray-300">
+
+                                        {{ $item->pendidikan ?: '-' }}
+
+                                    </td>
+
+
+                                    {{-- Golongan Darah --}}
+                                    <td class="p-4 text-gray-700 dark:text-gray-300">
+
+                                        {{ $item->golongan_darah ?: '-' }}
+
+                                    </td>
+
+
                                     {{-- Status --}}
                                     <td class="p-4">
 
@@ -525,28 +575,94 @@
                                     {{-- Aksi --}}
                                     <td class="p-4">
 
-                                        <div class="flex gap-2 justify-center">
+                                        <div class="flex gap-1.5 justify-center">
 
+                                            {{-- EDIT --}}
                                             <a
                                                 href="{{ route('admin.pegawai.edit', $item->id) }}"
+                                                title="Edit Pegawai"
                                                 class="
-                                                    px-3 py-1.5
-                                                    bg-yellow-500
-                                                    hover:bg-yellow-600
-                                                    text-white
-                                                    font-medium
-                                                    rounded-md
+                                                    inline-flex items-center justify-center
+                                                    w-9 h-9
+                                                    rounded-lg
+                                                    bg-indigo-50 hover:bg-indigo-100
+                                                    text-indigo-600
+                                                    dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50
+                                                    dark:text-indigo-400
                                                     transition
                                                 "
                                             >
-                                                Edit
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                                                    />
+                                                </svg>
+                                                <span class="sr-only">Edit Pegawai</span>
                                             </a>
 
 
+                                            {{-- RESET PASSWORD --}}
+                                            <form
+                                                action="{{ route('admin.pegawai.reset-password', $item->id) }}"
+                                                method="POST"
+                                                data-confirm="Reset password {{ $item->name }} menjadi password default? Pegawai wajib menggantinya saat login berikutnya."
+                                                data-confirm-title="Reset Password"
+                                                data-confirm-text="Ya, Reset"
+                                                data-confirm-variant="warning"
+                                            >
+
+                                                @csrf
+                                                @method('PUT')
+
+                                                <button
+                                                    type="submit"
+                                                    title="Reset Password"
+                                                    class="
+                                                        inline-flex items-center justify-center
+                                                        w-9 h-9
+                                                        rounded-lg
+                                                        bg-amber-50 hover:bg-amber-100
+                                                        text-amber-600
+                                                        dark:bg-amber-900/30 dark:hover:bg-amber-900/50
+                                                        dark:text-amber-400
+                                                        transition
+                                                    "
+                                                >
+                                                    <svg
+                                                        class="w-4 h-4"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                        stroke-width="2"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+                                                        />
+                                                    </svg>
+                                                    <span class="sr-only">Reset Password</span>
+                                                </button>
+
+                                            </form>
+
+
+                                            {{-- HAPUS --}}
                                             <form
                                                 action="{{ route('admin.pegawai.destroy', $item->id) }}"
                                                 method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus pegawai ini?')"
+                                                data-confirm="Yakin ingin menghapus pegawai ini? Tindakan ini tidak bisa dibatalkan."
+                                                data-confirm-title="Hapus Pegawai"
+                                                data-confirm-text="Ya, Hapus"
+                                                data-confirm-variant="danger"
                                             >
 
                                                 @csrf
@@ -554,17 +670,32 @@
 
                                                 <button
                                                     type="submit"
+                                                    title="Hapus Pegawai"
                                                     class="
-                                                        px-3 py-1.5
-                                                        bg-red-600
-                                                        hover:bg-red-700
-                                                        text-white
-                                                        font-medium
-                                                        rounded-md
+                                                        inline-flex items-center justify-center
+                                                        w-9 h-9
+                                                        rounded-lg
+                                                        bg-red-50 hover:bg-red-100
+                                                        text-red-600
+                                                        dark:bg-red-900/30 dark:hover:bg-red-900/50
+                                                        dark:text-red-400
                                                         transition
                                                     "
                                                 >
-                                                    Hapus
+                                                    <svg
+                                                        class="w-4 h-4"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                        stroke-width="2"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                                                        />
+                                                    </svg>
+                                                    <span class="sr-only">Hapus Pegawai</span>
                                                 </button>
 
                                             </form>
@@ -581,7 +712,7 @@
                                 <tr>
 
                                     <td
-                                        colspan="8"
+                                        colspan="14"
                                         class="
                                             p-6
                                             text-center

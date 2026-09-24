@@ -153,6 +153,109 @@
 
                         </div>
 
+
+                        {{-- Pangkat / Golongan --}}
+                        <div>
+
+                            <p
+                                class="text-sm
+                                       text-gray-500 dark:text-gray-400"
+                            >
+                                Pangkat / Golongan
+                            </p>
+
+                            <p
+                                class="mt-1 font-semibold
+                                       text-gray-900 dark:text-white"
+                            >
+                                {{ $absensi->user->pangkat_golongan ?? '-' }}
+                            </p>
+
+                        </div>
+
+
+                        {{-- Tanggal Lahir --}}
+                        <div>
+
+                            <p
+                                class="text-sm
+                                       text-gray-500 dark:text-gray-400"
+                            >
+                                Tanggal Lahir
+                            </p>
+
+                            <p
+                                class="mt-1 font-semibold
+                                       text-gray-900 dark:text-white"
+                            >
+                                {{ optional($absensi->user->tanggal_lahir)->format('d-m-Y') ?? '-' }}
+                            </p>
+
+                        </div>
+
+
+                        {{-- Jenis Kelamin --}}
+                        <div>
+
+                            <p
+                                class="text-sm
+                                       text-gray-500 dark:text-gray-400"
+                            >
+                                Jenis Kelamin
+                            </p>
+
+                            <p
+                                class="mt-1 font-semibold
+                                       text-gray-900 dark:text-white"
+                            >
+                                {{ $absensi->user->jenis_kelamin ?? '-' }}
+                            </p>
+
+                        </div>
+
+
+                        {{-- Pendidikan --}}
+                        <div>
+
+                            <p
+                                class="text-sm
+                                       text-gray-500 dark:text-gray-400"
+                            >
+                                Pendidikan
+                            </p>
+
+                            <p
+                                class="mt-1 font-semibold
+                                       text-gray-900 dark:text-white"
+                            >
+                                {{ $absensi->user->pendidikan ?? '-' }}
+                                @if($absensi->user->pendidikan_detail)
+                                    ({{ $absensi->user->pendidikan_detail }})
+                                @endif
+                            </p>
+
+                        </div>
+
+
+                        {{-- Golongan Darah --}}
+                        <div>
+
+                            <p
+                                class="text-sm
+                                       text-gray-500 dark:text-gray-400"
+                            >
+                                Golongan Darah
+                            </p>
+
+                            <p
+                                class="mt-1 font-semibold
+                                       text-gray-900 dark:text-white"
+                            >
+                                {{ $absensi->user->golongan_darah ?? '-' }}
+                            </p>
+
+                        </div>
+
                     </div>
 
                 </div>
@@ -342,6 +445,20 @@
                                 </span>
 
 
+                            @elseif($absensi->status === 'cuti')
+
+                                <span
+                                    class="inline-flex px-4 py-2
+                                           rounded-full
+                                           bg-teal-100 text-teal-700
+                                           dark:bg-teal-900/40
+                                           dark:text-teal-300
+                                           font-semibold"
+                                >
+                                    Cuti
+                                </span>
+
+
                             @elseif($absensi->status === 'lainnya')
 
                                 <span
@@ -395,6 +512,18 @@
 
                             @endif
 
+
+                            @if($absensi->is_simulasi)
+
+                                <p
+                                    class="mt-2 text-xs font-semibold
+                                           text-amber-600 dark:text-amber-400"
+                                >
+                                    🧪 Data hasil simulasi, bukan Apel Pagi sungguhan.
+                                </p>
+
+                            @endif
+
                         </div>
 
                     </div>
@@ -415,6 +544,7 @@
                         'izin',
                         'sakit',
                         'dinas_luar',
+                        'cuti',
                         'lainnya'
                     ]
                 )
@@ -465,6 +595,7 @@
                                             'izin' => 'Izin',
                                             'sakit' => 'Sakit',
                                             'dinas_luar' => 'Dinas Luar',
+                                            'cuti' => 'Cuti',
                                             'lainnya' => 'Lainnya',
                                             default => '-',
                                         }
@@ -585,12 +716,12 @@
                             @if($absensi->foto_masuk)
 
                                 <a
-                                    href="{{ asset('storage/' . $absensi->foto_masuk) }}"
+                                    href="{{ $absensi->foto_masuk_view_url }}"
                                     target="_blank"
                                 >
 
                                     <img
-                                        src="{{ asset('storage/' . $absensi->foto_masuk) }}"
+                                        src="{{ $absensi->foto_masuk_url }}"
                                         alt="Selfie Apel"
                                         class="w-full
                                                max-h-[500px]

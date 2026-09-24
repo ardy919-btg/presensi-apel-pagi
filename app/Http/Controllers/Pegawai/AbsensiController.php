@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Pegawai;
 use App\Helpers\AttendanceTime;
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
+use App\Models\User;
+use App\Services\AttendanceRetentionService;
+use App\Services\GoogleDriveService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,11 +36,11 @@ class AbsensiController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Absensi Hari Ini Hanya Berlaku Hari Senin
+        | Absensi Hari Ini Hanya Berlaku Hari Senin (Atau Saat Simulasi Aktif)
         |--------------------------------------------------------------------------
         */
 
-        if ($today->isMonday()) {
+        if (AttendanceTime::apelDiizinkanHariIni()) {
             $absensiHariIni = Absensi::where(
                 'user_id',
                 $user->id
@@ -67,7 +70,7 @@ class AbsensiController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Riwayat Khusus Hari Senin
+        | Riwayat Apel Pagi Senin + Hasil Simulasi
         |--------------------------------------------------------------------------
         |
         | DAYOFWEEK MySQL:
@@ -75,15 +78,20 @@ class AbsensiController extends Controller
         | 1 = Minggu
         | 2 = Senin
         |
+        | Data simulasi bisa bertanggal hari apa saja, jadi ikut ditampilkan
+        | di luar filter Senin supaya pegawai bisa melihat hasil uji cobanya.
+        |
         */
 
         $riwayatAbsensi = Absensi::where(
             'user_id',
             $user->id
         )
-            ->whereRaw(
-                'DAYOFWEEK(tanggal) = 2'
-            )
+            ->where(function ($query) {
+
+                $query->whereRaw('DAYOFWEEK(tanggal) = 2')
+                    ->orWhere('is_simulasi', true);
+            })
             ->orderBy(
                 'tanggal',
                 'desc'
@@ -95,9 +103,112 @@ class AbsensiController extends Controller
             ->paginate(10);
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Rekap Absensi Seluruh Pegawai Hari Ini
+        |--------------------------------------------------------------------------
+        |
+        | Hanya dihitung saat hari apel berlangsung (Senin / simulasi aktif).
+        |
+        */
+
+        $isSenin = AttendanceTime::apelDiizinkanHariIni();
+        $today = AttendanceTime::today();
+
+        $rekapBidang = collect();
+        $rekapStatus = [
+            'hadir' => 0,
+            'tidak_hadir' => 0,
+            'izin' => 0,
+            'sakit' => 0,
+            'dinas_luar' => 0,
+            'cuti' => 0,
+            'lainnya' => 0,
+            'alpha' => 0,
+        ];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Jumlah Pegawai Aktif
+        |--------------------------------------------------------------------------
+        |
+        | Dihitung dari tabel users (role pegawai, status aktif), baik yang
+        | sudah maupun belum mengisi absensi hari ini.
+        |
+        */
+
+        $totalPegawaiAktif = User::where('role', 'pegawai')
+            ->where('status', 'aktif')
+            ->count();
+
+        $totalPegawaiPerBidang = User::where('role', 'pegawai')
+            ->where('status', 'aktif')
+            ->get()
+            ->groupBy(
+                fn ($user) => $user->bidang ?: 'Tanpa Bidang'
+            )
+            ->map
+            ->count();
+
+
+        if ($isSenin) {
+
+            $absensiHariIniSemua = Absensi::with('user')
+                ->whereDate('tanggal', $today)
+                ->get();
+
+            $rekapBidang = $absensiHariIniSemua
+                ->groupBy(
+                    fn ($absensi) => $absensi->user->bidang ?: 'Tanpa Bidang'
+                )
+                ->map(function ($grup) {
+
+                    return $grup->whereIn(
+                        'status',
+                        ['hadir', 'terlambat']
+                    )->count();
+                })
+                ->union(
+                    $totalPegawaiPerBidang->map(fn () => 0)
+                )
+                ->map(function ($hadir, $bidang) use ($totalPegawaiPerBidang) {
+
+                    $totalBidang = $totalPegawaiPerBidang[$bidang] ?? 0;
+
+                    return [
+                        'hadir' => $hadir,
+                        'tidak_hadir' => max($totalBidang - $hadir, 0),
+                    ];
+                })
+                ->sortKeys();
+
+            foreach ($absensiHariIniSemua as $absensi) {
+
+                if (in_array($absensi->status, ['hadir', 'terlambat'])) {
+                    $rekapStatus['hadir']++;
+                } elseif (array_key_exists($absensi->status, $rekapStatus)) {
+                    $rekapStatus[$absensi->status]++;
+                }
+            }
+
+            $rekapStatus['tidak_hadir'] = max(
+                $totalPegawaiAktif - $rekapStatus['hadir'],
+                0
+            );
+        }
+
+
         return view(
             'pegawai.absensi.riwayat',
-            compact('riwayatAbsensi')
+            compact(
+                'riwayatAbsensi',
+                'isSenin',
+                'rekapBidang',
+                'rekapStatus',
+                'totalPegawaiAktif',
+                'totalPegawaiPerBidang'
+            )
         );
     }
 
@@ -120,15 +231,13 @@ class AbsensiController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Absensi Hanya Hari Senin
+        | Absensi Hanya Hari Senin (Atau Saat Simulasi Aktif)
         |--------------------------------------------------------------------------
         */
 
-        if (!$today->isMonday()) {
-            $this->hapusSessionQr();
-
+        if (! AttendanceTime::apelDiizinkanHariIni()) {
             return redirect()
-                ->route('pegawai.dashboard')
+                ->route('pegawai.absensi.index')
                 ->with(
                     'error',
                     'Absensi Apel Pagi hanya dapat dilakukan pada hari Senin.'
@@ -147,10 +256,7 @@ class AbsensiController extends Controller
         |
         */
 
-        $jamTutup = config(
-            'attendance.end_time',
-            '07:45'
-        );
+        $jamTutup = AttendanceTime::jamSelesai();
 
 
         $batasAbsensi = $today
@@ -161,41 +267,13 @@ class AbsensiController extends Controller
 
 
         if ($now->greaterThanOrEqualTo($batasAbsensi)) {
-            $this->hapusSessionQr();
-
             return redirect()
-                ->route('pegawai.dashboard')
+                ->route('pegawai.absensi.index')
                 ->with(
                     'error',
                     'Absensi Apel Pagi telah ditutup pada pukul '
                     . $batasAbsensi->format('H:i')
                     . ' WITA.'
-                );
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Validasi Session QR
-        |--------------------------------------------------------------------------
-        |
-        | Session QR tetap menggunakan waktu nyata.
-        | QR hanya berlaku selama 3 menit sejak discan.
-        |
-        */
-
-        if (
-            !session('qr_valid') ||
-            !session('qr_valid_until') ||
-            now()->timestamp > session('qr_valid_until')
-        ) {
-            $this->hapusSessionQr();
-
-            return redirect()
-                ->route('pegawai.dashboard')
-                ->with(
-                    'error',
-                    'QR Code belum diverifikasi atau sesi QR telah berakhir. Silakan scan QR kembali.'
                 );
         }
 
@@ -227,8 +305,6 @@ class AbsensiController extends Controller
 
 
         if ($absensiSudahAda) {
-            $this->hapusSessionQr();
-
             return redirect()
                 ->route('pegawai.absensi.index')
                 ->with(
@@ -334,15 +410,12 @@ class AbsensiController extends Controller
         );
 
 
-        $radiusKantor = (float) config(
-            'attendance.radius',
-            150
-        );
+        $radiusKantor = AttendanceTime::officeRadius();
 
 
         if ($jarak > $radiusKantor) {
             return redirect()
-                ->route('pegawai.verifikasi')
+                ->route('pegawai.absensi.index')
                 ->withInput()
                 ->with(
                     'error',
@@ -365,10 +438,7 @@ class AbsensiController extends Controller
         |
         */
 
-        $jamApel = config(
-            'attendance.start_time',
-            '07:30'
-        );
+        $jamApel = AttendanceTime::jamMulai();
 
 
         $batasTerlambat = $today
@@ -422,7 +492,10 @@ class AbsensiController extends Controller
                 $now->format('H:i:s'),
 
             'foto_masuk' =>
-                $fotoApel,
+                $fotoApel['value'],
+
+            'foto_masuk_storage' =>
+                $fotoApel['storage'],
 
             'latitude_masuk' =>
                 $request->latitude,
@@ -439,16 +512,13 @@ class AbsensiController extends Controller
             'keterangan' =>
                 null,
 
+            'is_simulasi' =>
+                AttendanceTime::simulasiAktif(),
+
         ]);
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Hapus Session QR
-        |--------------------------------------------------------------------------
-        */
-
-        $this->hapusSessionQr();
+        app(AttendanceRetentionService::class)->terapkan($user);
 
 
         return redirect()
@@ -485,6 +555,7 @@ class AbsensiController extends Controller
                     'izin',
                     'sakit',
                     'dinas_luar',
+                    'cuti',
                     'lainnya',
                 ]),
             ],
@@ -541,16 +612,13 @@ class AbsensiController extends Controller
             'keterangan' =>
                 trim($request->keterangan),
 
+            'is_simulasi' =>
+                AttendanceTime::simulasiAktif(),
+
         ]);
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Hapus Session QR
-        |--------------------------------------------------------------------------
-        */
-
-        $this->hapusSessionQr();
+        app(AttendanceRetentionService::class)->terapkan($user);
 
 
         return redirect()
@@ -570,14 +638,9 @@ class AbsensiController extends Controller
         float $longitudePegawai
     ): float {
 
-        $latitudeKantor = (float) config(
-            'attendance.latitude'
-        );
+        $latitudeKantor = AttendanceTime::officeLatitude();
 
-
-        $longitudeKantor = (float) config(
-            'attendance.longitude'
-        );
+        $longitudeKantor = AttendanceTime::officeLongitude();
 
 
         /*
@@ -659,13 +722,14 @@ class AbsensiController extends Controller
 
 
     /**
-     * Menyimpan selfie Base64 ke storage.
+     * Menyimpan selfie Base64 ke Google Drive (jika sudah terhubung) atau
+     * storage lokal. Mengembalikan ['value' => path/file ID, 'storage' => 'drive'|'local'].
      */
     private function simpanFotoBase64(
         string $fotoBase64,
         string $tipe,
         int $userId
-    ): string {
+    ): array {
 
         /*
         |--------------------------------------------------------------------------
@@ -782,7 +846,36 @@ class AbsensiController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Folder Penyimpanan
+        | Google Drive (Kalau Sudah Terhubung)
+        |--------------------------------------------------------------------------
+        */
+
+        $googleDrive = app(GoogleDriveService::class);
+
+        if ($googleDrive->configured()) {
+
+            $mimeType = $extension === 'png' ? 'image/png' : 'image/jpeg';
+
+            $fileId = $googleDrive->upload(
+                $fotoDecoded,
+                $namaFile,
+                $mimeType
+            );
+
+            if ($fileId) {
+                return [
+                    'value' => $fileId,
+                    'storage' => 'drive',
+                ];
+            }
+
+            // Upload ke Drive gagal -- lanjut simpan lokal sebagai fallback.
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Folder Penyimpanan (Lokal)
         |--------------------------------------------------------------------------
         */
 
@@ -793,12 +886,6 @@ class AbsensiController extends Controller
             . $namaFile;
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Simpan File
-        |--------------------------------------------------------------------------
-        */
-
         Storage::disk(
             'public'
         )->put(
@@ -807,20 +894,10 @@ class AbsensiController extends Controller
         );
 
 
-        return $path;
+        return [
+            'value' => $path,
+            'storage' => 'local',
+        ];
     }
 
-
-    /**
-     * Menghapus session hasil scan QR.
-     */
-    private function hapusSessionQr(): void
-    {
-        session()->forget([
-            'qr_valid',
-            'qr_tipe',
-            'qr_token',
-            'qr_valid_until',
-        ]);
-    }
 }

@@ -1,22 +1,163 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <div>
+        <div
+            class="flex flex-col
+                   lg:flex-row lg:items-start
+                   lg:justify-between
+                   gap-4"
+        >
 
-            <h2
-                class="font-semibold text-xl
-                       text-gray-800 dark:text-gray-200
-                       leading-tight"
-            >
-                Riwayat Apel Pagi
-            </h2>
+            <div>
 
-            <p
-                class="mt-1 text-sm
-                       text-gray-500 dark:text-gray-400"
-            >
-                Riwayat absensi Apel Pagi Anda.
-            </p>
+                <h2
+                    class="font-semibold text-xl
+                           text-gray-800 dark:text-gray-200
+                           leading-tight"
+                >
+                    Riwayat Apel Pagi
+                </h2>
+
+                <p
+                    class="mt-1 text-sm
+                           text-gray-500 dark:text-gray-400"
+                >
+                    Riwayat absensi Apel Pagi Anda.
+                </p>
+
+            </div>
+
+
+            {{-- ========================= --}}
+            {{-- PANEL REKAP KESELURUHAN PEGAWAI --}}
+            {{-- ========================= --}}
+
+            @if($isSenin)
+
+                <div
+                    class="rounded-xl border border-gray-200
+                           dark:border-gray-700
+                           bg-white dark:bg-gray-800/60
+                           px-4 py-3
+                           lg:ml-auto"
+                >
+
+                    <div class="flex flex-wrap items-center gap-2">
+
+                        <span
+                            class="text-sm font-medium
+                                   text-gray-600 dark:text-gray-400
+                                   mr-1"
+                        >
+                            Jumlah Pegawai: {{ $totalPegawaiAktif }}
+                        </span>
+
+                        <span
+                            class="inline-flex items-center gap-1
+                                   px-3 py-1.5
+                                   text-xs font-semibold
+                                   rounded-full
+                                   bg-green-100 text-green-700
+                                   dark:bg-green-900/40
+                                   dark:text-green-300"
+                        >
+                            Hadir: {{ $rekapStatus['hadir'] }}
+                        </span>
+
+                        <span
+                            class="inline-flex items-center gap-1
+                                   px-3 py-1.5
+                                   text-xs font-semibold
+                                   rounded-full
+                                   bg-gray-200 text-red-600
+                                   dark:bg-gray-700
+                                   dark:text-red-400"
+                        >
+                            Tidak Hadir: {{ $rekapStatus['tidak_hadir'] }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex flex-wrap items-center gap-2 mt-2">
+
+                        <span
+                            class="inline-flex items-center gap-1
+                                   px-3 py-1.5
+                                   text-xs font-semibold
+                                   rounded-full
+                                   bg-blue-100 text-blue-700
+                                   dark:bg-blue-900/40
+                                   dark:text-blue-300"
+                        >
+                            Izin: {{ $rekapStatus['izin'] }}
+                        </span>
+
+                        <span
+                            class="inline-flex items-center gap-1
+                                   px-3 py-1.5
+                                   text-xs font-semibold
+                                   rounded-full
+                                   bg-purple-100 text-purple-700
+                                   dark:bg-purple-900/40
+                                   dark:text-purple-300"
+                        >
+                            Sakit: {{ $rekapStatus['sakit'] }}
+                        </span>
+
+                        <span
+                            class="inline-flex items-center gap-1
+                                   px-3 py-1.5
+                                   text-xs font-semibold
+                                   rounded-full
+                                   bg-indigo-100 text-indigo-700
+                                   dark:bg-indigo-900/40
+                                   dark:text-indigo-300"
+                        >
+                            Dinas Luar: {{ $rekapStatus['dinas_luar'] }}
+                        </span>
+
+                        <span
+                            class="inline-flex items-center gap-1
+                                   px-3 py-1.5
+                                   text-xs font-semibold
+                                   rounded-full
+                                   bg-teal-100 text-teal-700
+                                   dark:bg-teal-900/40
+                                   dark:text-teal-300"
+                        >
+                            Cuti: {{ $rekapStatus['cuti'] }}
+                        </span>
+
+                        <span
+                            class="inline-flex items-center gap-1
+                                   px-3 py-1.5
+                                   text-xs font-semibold
+                                   rounded-full
+                                   bg-orange-100 text-orange-700
+                                   dark:bg-orange-900/40
+                                   dark:text-orange-300"
+                        >
+                            Lainnya: {{ $rekapStatus['lainnya'] }}
+                        </span>
+
+                        <span
+                            class="inline-flex items-center gap-1
+                                   px-3 py-1.5
+                                   text-xs font-semibold
+                                   rounded-full
+                                   bg-red-100 text-red-700
+                                   dark:bg-red-900/40
+                                   dark:text-red-300"
+                        >
+                            Alpha: {{ $rekapStatus['alpha'] }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            @endif
 
         </div>
     </x-slot>
@@ -28,26 +169,86 @@
 
 
             {{-- ========================= --}}
-            {{-- JUDUL --}}
+            {{-- REKAP ABSENSI SELURUH PEGAWAI --}}
             {{-- ========================= --}}
 
-            <div class="mb-6">
+            @if($isSenin)
 
-                <h1
-                    class="text-2xl font-bold
-                           text-gray-900 dark:text-white"
+                {{-- ========================= --}}
+                {{-- REKAP PER BIDANG --}}
+                {{-- ========================= --}}
+
+                <div
+                    class="mb-8 rounded-xl border border-gray-200
+                           dark:border-gray-700
+                           bg-white dark:bg-gray-800/60
+                           p-4"
                 >
-                    Riwayat Apel
-                </h1>
 
-                <p
-                    class="mt-1
-                           text-gray-600 dark:text-gray-400"
-                >
-                    Berikut adalah riwayat kehadiran Apel Pagi Anda.
-                </p>
+                    <div class="flex flex-wrap justify-start gap-2">
 
-            </div>
+                        @forelse($rekapBidang as $bidang => $jumlah)
+
+                            <span
+                                class="inline-flex items-center gap-1.5
+                                       px-3 py-1.5
+                                       text-xs font-medium
+                                       rounded-full
+                                       bg-gray-100 text-gray-700
+                                       border border-gray-200
+                                       dark:bg-gray-700
+                                       dark:text-gray-200
+                                       dark:border-gray-600"
+                            >
+                                <span class="font-semibold">
+                                    {{ $bidang }}
+                                    ({{ $totalPegawaiPerBidang[$bidang] ?? 0 }})
+                                </span>
+
+                                <span class="text-green-600 dark:text-green-400">
+                                    Hadir: {{ $jumlah['hadir'] }}
+                                </span>
+
+                                <span class="text-gray-400">|</span>
+
+                                <span class="text-red-600 dark:text-red-400">
+                                    Tidak Hadir: {{ $jumlah['tidak_hadir'] }}
+                                </span>
+                            </span>
+
+                        @empty
+
+                            <span class="text-sm text-gray-500 dark:text-gray-400">
+                                Belum ada data absensi hari ini.
+                            </span>
+
+                        @endforelse
+
+                    </div>
+
+                </div>
+
+            @else
+
+                <div class="mb-6">
+
+                    <h1
+                        class="text-2xl font-bold
+                               text-gray-900 dark:text-white"
+                    >
+                        Riwayat Apel
+                    </h1>
+
+                    <p
+                        class="mt-1
+                               text-gray-600 dark:text-gray-400"
+                    >
+                        Berikut adalah riwayat kehadiran Apel Pagi Anda.
+                    </p>
+
+                </div>
+
+            @endif
 
 
 
@@ -303,6 +504,22 @@
                                                 </span>
 
 
+                                            @elseif($absensi->status === 'cuti')
+
+                                                <span
+                                                    class="inline-flex
+                                                           px-3 py-1
+                                                           text-xs font-semibold
+                                                           rounded-full
+                                                           bg-teal-100
+                                                           text-teal-700
+                                                           dark:bg-teal-900/40
+                                                           dark:text-teal-300"
+                                                >
+                                                    Cuti
+                                                </span>
+
+
                                             @elseif($absensi->status === 'lainnya')
 
                                                 <span
@@ -373,13 +590,13 @@
                                             @if($absensi->foto_masuk)
 
                                                 <a
-                                                    href="{{ asset('storage/' . $absensi->foto_masuk) }}"
+                                                    href="{{ $absensi->foto_masuk_view_url }}"
                                                     target="_blank"
                                                     class="inline-block"
                                                 >
 
                                                     <img
-                                                        src="{{ asset('storage/' . $absensi->foto_masuk) }}"
+                                                        src="{{ $absensi->foto_masuk_url }}"
                                                         alt="Selfie Apel"
                                                         class="w-14 h-14
                                                                mx-auto
@@ -468,6 +685,7 @@
                                                         'izin',
                                                         'sakit',
                                                         'dinas_luar',
+                                                        'cuti',
                                                         'lainnya'
                                                     ]
                                                 )
@@ -484,6 +702,7 @@
                                                                 'izin' => 'Izin',
                                                                 'sakit' => 'Sakit',
                                                                 'dinas_luar' => 'Dinas Luar',
+                                                                'cuti' => 'Cuti',
                                                                 'lainnya' => 'Lainnya',
                                                                 default => '-',
                                                             }

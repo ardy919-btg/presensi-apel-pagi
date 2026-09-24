@@ -28,6 +28,33 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Waktu Absensi Online Mulai Bisa Diisi
+    |--------------------------------------------------------------------------
+    |
+    | Murni informasi untuk pegawai ("absensi online sudah bisa diisi mulai
+    | jam segini"). Tidak memengaruhi penentuan status Hadir/Terlambat, yang
+    | tetap memakai 'start_time' di atas.
+    |
+    */
+
+    'online_start_time' => env('ATTENDANCE_ONLINE_START_TIME', '07:00'),
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Password Default Pegawai
+    |--------------------------------------------------------------------------
+    |
+    | Dipakai untuk akun hasil import dan reset password oleh admin.
+    | Sengaja tanpa nilai bawaan di kode -- isi lewat DEFAULT_PASSWORD di .env.
+    |
+    */
+
+    'default_password' => env('DEFAULT_PASSWORD'),
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Mode Simulasi / Testing
     |--------------------------------------------------------------------------
     |

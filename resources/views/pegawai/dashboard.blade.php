@@ -18,6 +18,9 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
 
+            <x-simulasi-banner />
+
+
             {{-- ========================= --}}
             {{-- SELAMAT DATANG --}}
             {{-- ========================= --}}
@@ -75,7 +78,7 @@
                                dark:text-green-400"
                     >
                         Hari ini merupakan jadwal Apel Pagi.
-                        Scan QR Code yang tersedia untuk melakukan absensi.
+                        Buka halaman Status Apel untuk mengisi absensi.
                     </p>
 
                 </div>
@@ -163,7 +166,7 @@
                                    text-gray-900
                                    dark:text-white"
                         >
-                            07:30 WITA
+                            {{ \App\Helpers\AttendanceTime::jamMulaiOnline() }} WITA
                         </p>
 
                     </div>
@@ -190,7 +193,7 @@
                                    text-gray-900
                                    dark:text-white"
                         >
-                            07:45 WITA
+                            {{ \App\Helpers\AttendanceTime::jamSelesai() }} WITA
                         </p>
 
                     </div>
@@ -209,7 +212,7 @@
                                    text-gray-500
                                    dark:text-gray-400"
                         >
-                            Lewat 07:30
+                            Lewat {{ \App\Helpers\AttendanceTime::jamMulai() }}
                         </p>
 
                         <p
@@ -389,6 +392,20 @@
                             </span>
 
 
+                        @elseif($absensiHariIni->status === 'cuti')
+
+                            <span
+                                class="inline-flex
+                                       px-4 py-2
+                                       rounded-full
+                                       bg-teal-100
+                                       text-teal-700
+                                       font-semibold"
+                            >
+                                Cuti
+                            </span>
+
+
                         @elseif($absensiHariIni->status === 'lainnya')
 
                             <span
@@ -500,45 +517,18 @@
                         class="mt-2
                                text-gray-600 dark:text-gray-400"
                     >
-                        Login menggunakan akun Anda kemudian scan QR Code
-                        Apel Pagi yang tersedia.
+                        Login menggunakan akun Anda, lalu langsung isi
+                        absensi di halaman Status Apel. Tidak perlu scan
+                        QR Code lagi.
                     </p>
 
 
 
                     <div
                         class="grid grid-cols-1
-                               sm:grid-cols-3
+                               sm:grid-cols-2
                                gap-4 mt-6"
                     >
-
-                        {{-- QR --}}
-                        <div
-                            class="p-4 rounded-lg
-                                   bg-green-50
-                                   dark:bg-gray-700"
-                        >
-
-                            <div
-                                class="font-semibold
-                                       text-green-700
-                                       dark:text-green-400"
-                            >
-                                1. Scan QR Code
-                            </div>
-
-
-                            <p
-                                class="mt-1 text-sm
-                                       text-gray-600
-                                       dark:text-gray-300"
-                            >
-                                Scan QR Code Apel Pagi yang tersedia.
-                            </p>
-
-                        </div>
-
-
 
                         {{-- PILIH KEHADIRAN --}}
                         <div
@@ -552,7 +542,7 @@
                                        text-blue-700
                                        dark:text-blue-400"
                             >
-                                2. Pilih Kehadiran
+                                1. Pilih Kehadiran
                             </div>
 
 
@@ -580,7 +570,7 @@
                                        text-purple-700
                                        dark:text-purple-400"
                             >
-                                3. Kirim Absensi
+                                2. Kirim Absensi
                             </div>
 
 
@@ -633,284 +623,6 @@
                         >
                             Riwayat Apel
                         </a>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-
-            {{-- ========================= --}}
-            {{-- RIWAYAT APEL TERAKHIR --}}
-            {{-- ========================= --}}
-
-            <div
-                class="bg-white dark:bg-gray-800
-                       shadow-sm rounded-xl"
-            >
-
-                <div class="p-6">
-
-                    <div
-                        class="flex flex-col
-                               sm:flex-row
-                               sm:items-center
-                               sm:justify-between
-                               gap-3 mb-5"
-                    >
-
-                        <h3
-                            class="text-lg font-semibold
-                                   text-gray-900 dark:text-white"
-                        >
-                            Riwayat Apel Terakhir
-                        </h3>
-
-
-                        <a
-                            href="{{ route('pegawai.riwayat') }}"
-                            class="text-sm font-semibold
-                                   text-indigo-600
-                                   hover:text-indigo-800"
-                        >
-                            Lihat Semua
-                        </a>
-
-                    </div>
-
-
-
-                    <div class="overflow-x-auto">
-
-                        <table
-                            class="min-w-full
-                                   divide-y divide-gray-200
-                                   dark:divide-gray-700"
-                        >
-
-                            <thead
-                                class="bg-gray-50
-                                       dark:bg-gray-700"
-                            >
-
-                                <tr>
-
-                                    <th
-                                        class="px-4 py-3
-                                               text-left
-                                               text-xs font-semibold
-                                               uppercase tracking-wider"
-                                    >
-                                        Tanggal Apel
-                                    </th>
-
-
-                                    <th
-                                        class="px-4 py-3
-                                               text-center
-                                               text-xs font-semibold
-                                               uppercase tracking-wider"
-                                    >
-                                        Jam
-                                    </th>
-
-
-                                    <th
-                                        class="px-4 py-3
-                                               text-center
-                                               text-xs font-semibold
-                                               uppercase tracking-wider"
-                                    >
-                                        Status
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-
-
-                            <tbody
-                                class="divide-y divide-gray-200
-                                       dark:divide-gray-700"
-                            >
-
-                                @forelse(
-                                    $riwayatAbsensi as $absensi
-                                )
-
-                                    <tr
-                                        class="hover:bg-gray-50
-                                               dark:hover:bg-gray-700"
-                                    >
-
-                                        <td class="px-4 py-4">
-
-                                            {{
-                                                \Carbon\Carbon::parse(
-                                                    $absensi->tanggal
-                                                )
-                                                ->locale('id')
-                                                ->translatedFormat(
-                                                    'd F Y'
-                                                )
-                                            }}
-
-                                        </td>
-
-
-                                        <td
-                                            class="px-4 py-4
-                                                   text-center"
-                                        >
-
-                                            @if($absensi->jam_masuk)
-
-                                                {{
-                                                    \Carbon\Carbon::parse(
-                                                        $absensi->jam_masuk
-                                                    )->format('H:i')
-                                                }}
-
-                                            @else
-
-                                                -
-
-                                            @endif
-
-                                        </td>
-
-
-                                        <td
-                                            class="px-4 py-4
-                                                   text-center"
-                                        >
-
-                                            @if($absensi->status === 'hadir')
-
-                                                <span
-                                                    class="inline-flex
-                                                           px-3 py-1
-                                                           text-xs font-semibold
-                                                           rounded-full
-                                                           bg-green-100
-                                                           text-green-700"
-                                                >
-                                                    Hadir
-                                                </span>
-
-
-                                            @elseif($absensi->status === 'terlambat')
-
-                                                <span
-                                                    class="inline-flex
-                                                           px-3 py-1
-                                                           text-xs font-semibold
-                                                           rounded-full
-                                                           bg-yellow-100
-                                                           text-yellow-700"
-                                                >
-                                                    Terlambat
-                                                </span>
-
-
-                                            @elseif($absensi->status === 'izin')
-
-                                                <span
-                                                    class="inline-flex
-                                                           px-3 py-1
-                                                           text-xs font-semibold
-                                                           rounded-full
-                                                           bg-blue-100
-                                                           text-blue-700"
-                                                >
-                                                    Izin
-                                                </span>
-
-
-                                            @elseif($absensi->status === 'sakit')
-
-                                                <span
-                                                    class="inline-flex
-                                                           px-3 py-1
-                                                           text-xs font-semibold
-                                                           rounded-full
-                                                           bg-purple-100
-                                                           text-purple-700"
-                                                >
-                                                    Sakit
-                                                </span>
-
-
-                                            @elseif($absensi->status === 'dinas_luar')
-
-                                                <span
-                                                    class="inline-flex
-                                                           px-3 py-1
-                                                           text-xs font-semibold
-                                                           rounded-full
-                                                           bg-indigo-100
-                                                           text-indigo-700"
-                                                >
-                                                    Dinas Luar
-                                                </span>
-
-
-                                            @elseif($absensi->status === 'lainnya')
-
-                                                <span
-                                                    class="inline-flex
-                                                           px-3 py-1
-                                                           text-xs font-semibold
-                                                           rounded-full
-                                                           bg-orange-100
-                                                           text-orange-700"
-                                                >
-                                                    Lainnya
-                                                </span>
-
-
-                                            @else
-
-                                                <span
-                                                    class="inline-flex
-                                                           px-3 py-1
-                                                           text-xs font-semibold
-                                                           rounded-full
-                                                           bg-red-100
-                                                           text-red-700"
-                                                >
-                                                    Alpha
-                                                </span>
-
-                                            @endif
-
-                                        </td>
-
-                                    </tr>
-
-                                @empty
-
-                                    <tr>
-
-                                        <td
-                                            colspan="3"
-                                            class="px-4 py-8
-                                                   text-center
-                                                   text-gray-500"
-                                        >
-                                            Belum ada riwayat Apel Pagi.
-                                        </td>
-
-                                    </tr>
-
-                                @endforelse
-
-                            </tbody>
-
-                        </table>
 
                     </div>
 

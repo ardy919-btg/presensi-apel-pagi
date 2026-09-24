@@ -323,6 +323,7 @@
                                 'izin' => 'Izin',
                                 'sakit' => 'Sakit',
                                 'dinas_luar' => 'Dinas Luar',
+                                'cuti' => 'Cuti',
                                 'lainnya' => 'Lainnya',
                                 'alpha' => 'Alpha',
                                 default => ucfirst(
@@ -440,6 +441,17 @@
                     <br>
 
                     {{ $totalDinasLuar }}
+                </td>
+
+
+                <td>
+                    <strong>
+                        Cuti
+                    </strong>
+
+                    <br>
+
+                    {{ $totalCuti }}
                 </td>
 
 
@@ -602,6 +614,10 @@
                                 Dinas Luar
                                 @break
 
+                            @case('cuti')
+                                Cuti
+                                @break
+
                             @case('lainnya')
                                 Lainnya
                                 @break
@@ -637,6 +653,7 @@
                                     'izin',
                                     'sakit',
                                     'dinas_luar',
+                                    'cuti',
                                     'lainnya'
                                 ]
                             )
@@ -653,6 +670,7 @@
                                             'izin' => 'Izin',
                                             'sakit' => 'Sakit',
                                             'dinas_luar' => 'Dinas Luar',
+                                            'cuti' => 'Cuti',
                                             'lainnya' => 'Lainnya',
                                             default => '-',
                                         }

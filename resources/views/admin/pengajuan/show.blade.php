@@ -27,30 +27,6 @@
     <div class="py-8">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
 
-            {{-- Notifikasi sukses --}}
-            @if (session('success'))
-                <div
-                    class="mb-6 rounded-lg border border-green-200
-                           bg-green-50 px-4 py-3 text-green-700
-                           dark:border-green-800 dark:bg-green-900/30
-                           dark:text-green-300"
-                >
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            {{-- Notifikasi error --}}
-            @if (session('error'))
-                <div
-                    class="mb-6 rounded-lg border border-red-200
-                           bg-red-50 px-4 py-3 text-red-700
-                           dark:border-red-800 dark:bg-red-900/30
-                           dark:text-red-300"
-                >
-                    {{ session('error') }}
-                </div>
-            @endif
-
             {{-- Error validasi --}}
             @if ($errors->any())
                 <div
@@ -435,6 +411,10 @@
                                     ) }}"
                                     method="POST"
                                     class="mb-6"
+                                    data-confirm="Yakin ingin menyetujui pengajuan ini?"
+                                    data-confirm-title="Setujui Pengajuan"
+                                    data-confirm-text="Ya, Setujui"
+                                    data-confirm-variant="default"
                                 >
                                     @csrf
 
@@ -467,7 +447,6 @@
 
                                     <button
                                         type="submit"
-                                        onclick="return confirm('Yakin ingin menyetujui pengajuan ini?')"
                                         class="mt-3 w-full inline-flex
                                                items-center justify-center
                                                rounded-lg bg-green-600
@@ -494,6 +473,10 @@
                                         $pengajuan
                                     ) }}"
                                     method="POST"
+                                    data-confirm="Yakin ingin menolak pengajuan ini?"
+                                    data-confirm-title="Tolak Pengajuan"
+                                    data-confirm-text="Ya, Tolak"
+                                    data-confirm-variant="warning"
                                 >
                                     @csrf
 
@@ -524,7 +507,6 @@
 
                                     <button
                                         type="submit"
-                                        onclick="return confirm('Yakin ingin menolak pengajuan ini?')"
                                         class="mt-3 w-full inline-flex
                                                items-center justify-center
                                                rounded-lg bg-red-600

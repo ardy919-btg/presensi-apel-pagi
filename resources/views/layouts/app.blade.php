@@ -23,6 +23,22 @@
 
 
     {{-- ============================================= --}}
+    {{-- ICON APLIKASI --}}
+    {{-- ============================================= --}}
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ asset('images/logo_absensi_apel.svg') }}"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        href="{{ asset('images/logo_absensi_apel.svg') }}"
+    >
+
+
+    {{-- ============================================= --}}
     {{-- FONT --}}
     {{-- ============================================= --}}
 
@@ -168,6 +184,10 @@
         </footer>
 
     </div>
+
+
+    <x-toast-container />
+    <x-confirm-modal />
 
 </body>
 

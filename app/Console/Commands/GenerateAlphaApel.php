@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Helpers\AttendanceTime;
 use App\Models\Absensi;
 use App\Models\User;
+use App\Services\AttendanceRetentionService;
 use Illuminate\Console\Command;
 
 class GenerateAlphaApel extends Command
@@ -19,11 +20,16 @@ class GenerateAlphaApel extends Command
 
         /*
         |--------------------------------------------------------------------------
-        | Pastikan Hari Senin
+        | Pastikan Hari Senin (Atau Sedang Simulasi)
         |--------------------------------------------------------------------------
+        |
+        | Jadwal cron (routes/console.php) tetap hanya berjalan hari Senin,
+        | tapi pengecekan ini juga dilonggarkan supaya command bisa dites
+        | manual lewat CLI selama mode simulasi berlaku.
+        |
         */
 
-        if (!$today->isMonday()) {
+        if (! AttendanceTime::apelDiizinkanHariIni()) {
             $this->error(
                 'Proses Alpha hanya dapat dilakukan untuk hari Senin.'
             );
@@ -87,11 +93,14 @@ class GenerateAlphaApel extends Command
                     'status' => 'alpha',
                     'alasan_tidak_hadir' => null,
                     'keterangan' => null,
+                    'is_simulasi' => AttendanceTime::simulasiAktif(),
                 ]
             );
 
             if ($absensi->wasRecentlyCreated) {
                 $jumlahAlpha++;
+
+                app(AttendanceRetentionService::class)->terapkan($pegawai);
             }
         }
 

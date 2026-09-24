@@ -81,6 +81,107 @@
                     </div>
 
                     <div class="mb-4">
+                        <label>Pangkat / Golongan</label>
+
+                        <input type="text"
+                               name="pangkat_golongan"
+                               value="{{ old('pangkat_golongan') }}"
+                               class="w-full mt-1 rounded border-gray-300">
+
+                        @error('pangkat_golongan')
+                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label>Tanggal Lahir</label>
+
+                        <input type="date"
+                               name="tanggal_lahir"
+                               value="{{ old('tanggal_lahir') }}"
+                               class="w-full mt-1 rounded border-gray-300">
+
+                        @error('tanggal_lahir')
+                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label>Jenis Kelamin</label>
+
+                        <select name="jenis_kelamin"
+                                class="w-full mt-1 rounded border-gray-300">
+
+                            <option value="">-- Pilih Jenis Kelamin --</option>
+
+                            <option value="Laki-Laki"
+                                {{ old('jenis_kelamin') === 'Laki-Laki' ? 'selected' : '' }}>
+                                Laki-Laki
+                            </option>
+
+                            <option value="Perempuan"
+                                {{ old('jenis_kelamin') === 'Perempuan' ? 'selected' : '' }}>
+                                Perempuan
+                            </option>
+
+                        </select>
+
+                        @error('jenis_kelamin')
+                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label>Pendidikan</label>
+
+                        <input type="text"
+                               name="pendidikan"
+                               value="{{ old('pendidikan') }}"
+                               placeholder="Contoh: S1, S2, D3, SMA/SMK/Sederajat"
+                               class="w-full mt-1 rounded border-gray-300">
+
+                        @error('pendidikan')
+                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label>Pendidikan (Detail)</label>
+
+                        <input type="text"
+                               name="pendidikan_detail"
+                               value="{{ old('pendidikan_detail') }}"
+                               placeholder="Contoh: SMK, Madrasah Aliyah"
+                               class="w-full mt-1 rounded border-gray-300">
+
+                        @error('pendidikan_detail')
+                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label>Golongan Darah</label>
+
+                        <select name="golongan_darah"
+                                class="w-full mt-1 rounded border-gray-300">
+
+                            <option value="">-- Pilih Golongan Darah --</option>
+
+                            @foreach (['A', 'B', 'AB', 'O'] as $golongan)
+                                <option value="{{ $golongan }}"
+                                    {{ old('golongan_darah') === $golongan ? 'selected' : '' }}>
+                                    {{ $golongan }}
+                                </option>
+                            @endforeach
+
+                        </select>
+
+                        @error('golongan_darah')
+                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
                         <label>Password</label>
 
                         <input type="password"

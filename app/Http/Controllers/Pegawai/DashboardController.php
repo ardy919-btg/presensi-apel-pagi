@@ -31,11 +31,12 @@ class DashboardController extends Controller
         | Cek Hari Apel
         |--------------------------------------------------------------------------
         |
-        | Apel Pagi hanya dilaksanakan setiap hari Senin.
+        | Apel Pagi normalnya hanya dilaksanakan setiap hari Senin, kecuali
+        | saat mode simulasi sedang berlaku (bisa hari apa saja).
         |
         */
 
-        $isSenin = $today->isMonday();
+        $isSenin = AttendanceTime::apelDiizinkanHariIni();
 
 
         /*
@@ -64,49 +65,18 @@ class DashboardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Riwayat Apel Terbaru
-        |--------------------------------------------------------------------------
-        |
-        | DAYOFWEEK MySQL:
-        |
-        | 1 = Minggu
-        | 2 = Senin
-        |
-        | Karena sistem khusus Apel Pagi hari Senin,
-        | data selain hari Senin tidak ditampilkan.
-        |
-        */
-
-        $riwayatAbsensi = Absensi::where(
-            'user_id',
-            $user->id
-        )
-            ->whereRaw(
-                'DAYOFWEEK(tanggal) = 2'
-            )
-            ->orderBy(
-                'tanggal',
-                'desc'
-            )
-            ->orderBy(
-                'jam_masuk',
-                'desc'
-            )
-            ->take(5)
-            ->get();
-
-
-        /*
-        |--------------------------------------------------------------------------
         | Tampilkan Dashboard Pegawai
         |--------------------------------------------------------------------------
+        |
+        | Rekap seluruh pegawai dan riwayat apel pegawai dipindahkan ke
+        | halaman Riwayat Apel supaya dashboard tidak terlalu penuh.
+        |
         */
 
         return view(
             'pegawai.dashboard',
             compact(
                 'absensiHariIni',
-                'riwayatAbsensi',
                 'isSenin'
             )
         );

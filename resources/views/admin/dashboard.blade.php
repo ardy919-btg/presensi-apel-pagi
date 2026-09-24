@@ -32,16 +32,9 @@
         $hariIni = \App\Helpers\AttendanceTime::today();
 
 
-        $jamMulai = config(
-            'attendance.start_time',
-            '07:30'
-        );
+        $jamMulai = \App\Helpers\AttendanceTime::jamMulai();
 
-
-        $jamTutup = config(
-            'attendance.end_time',
-            '07:45'
-        );
+        $jamTutup = \App\Helpers\AttendanceTime::jamSelesai();
 
 
         $waktuMulai = $hariIni
@@ -107,6 +100,9 @@
     <div class="py-8">
 
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
+
+            <x-simulasi-banner />
 
 
             {{-- ========================= --}}
@@ -482,6 +478,24 @@
                 </div>
 
 
+                {{-- Cuti --}}
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Cuti
+                    </p>
+
+                    <p class="mt-3 text-3xl font-bold text-teal-600">
+                        {{ $cutiHariIni ?? 0 }}
+                    </p>
+
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        Tidak hadir karena cuti
+                    </p>
+
+                </div>
+
+
                 {{-- Lainnya --}}
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
 
@@ -845,6 +859,17 @@
                                                            dark:bg-indigo-900/40 dark:text-indigo-300"
                                                 >
                                                     Dinas Luar
+                                                </span>
+
+                                            @elseif($absensi->status === 'cuti')
+
+                                                <span
+                                                    class="inline-flex px-3 py-1
+                                                           rounded-full text-xs font-semibold
+                                                           bg-teal-100 text-teal-700
+                                                           dark:bg-teal-900/40 dark:text-teal-300"
+                                                >
+                                                    Cuti
                                                 </span>
 
                                             @elseif($absensi->status === 'lainnya')

@@ -22,7 +22,18 @@ class DashboardController extends Controller
 
         $today = AttendanceTime::today();
 
-        $isSenin = $today->isMonday();
+        /*
+        |--------------------------------------------------------------------------
+        | Apakah Apel Pagi Aktif Hari Ini
+        |--------------------------------------------------------------------------
+        |
+        | Hari Senin sungguhan, ATAU hari apa pun selama mode simulasi
+        | sedang berlaku. Nama variabel dipertahankan ($isSenin) supaya
+        | tidak perlu mengubah seluruh view yang memakainya.
+        |
+        */
+
+        $isSenin = AttendanceTime::apelDiizinkanHariIni();
 
 
         /*
@@ -158,6 +169,23 @@ class DashboardController extends Controller
 
             /*
             |--------------------------------------------------------------------------
+            | Cuti
+            |--------------------------------------------------------------------------
+            */
+
+            $cutiHariIni = Absensi::whereDate(
+                'tanggal',
+                $today
+            )
+                ->where(
+                    'status',
+                    'cuti'
+                )
+                ->count();
+
+
+            /*
+            |--------------------------------------------------------------------------
             | Lainnya
             |--------------------------------------------------------------------------
             */
@@ -226,6 +254,8 @@ class DashboardController extends Controller
 
             $dinasLuarHariIni = 0;
 
+            $cutiHariIni = 0;
+
             $lainnyaHariIni = 0;
 
             $alphaHariIni = 0;
@@ -251,9 +281,11 @@ class DashboardController extends Controller
         $absensiTerbaru = Absensi::with(
             'user'
         )
-            ->whereRaw(
-                'DAYOFWEEK(tanggal) = 2'
-            )
+            ->where(function ($query) {
+
+                $query->whereRaw('DAYOFWEEK(tanggal) = 2')
+                    ->orWhere('is_simulasi', true);
+            })
             ->orderByDesc(
                 'tanggal'
             )
@@ -279,6 +311,7 @@ class DashboardController extends Controller
                 'izinHariIni',
                 'sakitHariIni',
                 'dinasLuarHariIni',
+                'cutiHariIni',
                 'lainnyaHariIni',
                 'alphaHariIni',
                 'belumAbsen',

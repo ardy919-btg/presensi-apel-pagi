@@ -159,17 +159,17 @@
 
                 <x-text-input
                     id="pegawai_name"
+                    name="name"
                     type="text"
-                    class="
-                        mt-1
-                        block
-                        w-full
-                        bg-gray-100
-                        dark:bg-gray-700
-                        cursor-not-allowed
-                    "
-                    :value="$user->name"
-                    readonly
+                    class="mt-1 block w-full"
+                    :value="old('name', $user->name)"
+                    required
+                    autocomplete="name"
+                />
+
+                <x-input-error
+                    class="mt-2"
+                    :messages="$errors->get('name')"
                 />
 
             </div>
@@ -185,17 +185,15 @@
 
                 <x-text-input
                     id="jabatan"
+                    name="jabatan"
                     type="text"
-                    class="
-                        mt-1
-                        block
-                        w-full
-                        bg-gray-100
-                        dark:bg-gray-700
-                        cursor-not-allowed
-                    "
-                    :value="$user->jabatan"
-                    readonly
+                    class="mt-1 block w-full"
+                    :value="old('jabatan', $user->jabatan)"
+                />
+
+                <x-input-error
+                    class="mt-2"
+                    :messages="$errors->get('jabatan')"
                 />
 
             </div>
@@ -232,23 +230,45 @@
 
                 <x-input-label
                     for="pegawai_email"
-                    value="Email"
+                    value="Email (untuk Login dengan Google)"
                 />
 
                 <x-text-input
                     id="pegawai_email"
-                    type="text"
-                    class="
-                        mt-1
-                        block
-                        w-full
-                        bg-gray-100
-                        dark:bg-gray-700
-                        cursor-not-allowed
-                    "
-                    :value="$user->email ?: '-'"
-                    readonly
+                    name="email"
+                    type="email"
+                    class="mt-1 block w-full"
+                    :value="old('email', $user->email)"
+                    autocomplete="username"
                 />
+
+                <x-input-error
+                    class="mt-2"
+                    :messages="$errors->get('email')"
+                />
+
+                @if(! $user->email)
+
+                    <p
+                        class="
+                            mt-2
+                            flex
+                            items-start
+                            gap-2
+                            text-sm
+                            text-amber-700
+                            dark:text-amber-400
+                        "
+                    >
+                        <span>⚠️</span>
+                        <span>
+                            Alamat email Anda belum diisi. Lengkapi dengan
+                            email Google Anda supaya bisa Login dengan Google
+                            di halaman login.
+                        </span>
+                    </p>
+
+                @endif
 
             </div>
 
@@ -264,8 +284,33 @@
                     dark:text-blue-300
                 "
             >
-                Jika terdapat kesalahan pada NIP, nama, jabatan, atau bidang,
-                silakan hubungi administrator BPKAD.
+                Jika terdapat kesalahan pada NIP atau bidang, silakan
+                hubungi administrator BPKAD. Nama, jabatan, dan alamat
+                email dapat Anda perbarui sendiri di atas.
+            </div>
+
+
+            <div class="flex items-center gap-4">
+
+                <x-primary-button>
+                    Simpan Profil
+                </x-primary-button>
+
+
+                @if (session('status') === 'profile-updated')
+
+                    <p
+                        x-data="{ show: true }"
+                        x-show="show"
+                        x-transition
+                        x-init="setTimeout(() => show = false, 3000)"
+                        class="text-sm text-green-600 dark:text-green-400"
+                    >
+                        Profil berhasil diperbarui.
+                    </p>
+
+                @endif
+
             </div>
 
         @endif
