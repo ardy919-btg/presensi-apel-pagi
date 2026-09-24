@@ -59,6 +59,12 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
 
     Route::get(
+        '/absensi/{absensi}/foto',
+        [\App\Http\Controllers\AbsensiFotoController::class, 'show']
+    )->name('absensi.foto');
+
+
+    Route::get(
         '/profile',
         [ProfileController::class, 'edit']
     )->name('profile.edit');

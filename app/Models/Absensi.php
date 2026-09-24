@@ -36,20 +36,15 @@ class Absensi extends Model
     }
 
     /**
-     * URL untuk menampilkan thumbnail/preview foto selfie, apa pun lokasi
-     * penyimpanannya (lokal atau Google Drive).
+     * URL foto selfie, apa pun lokasi penyimpanannya (lokal atau Google
+     * Drive). Selalu lewat route yang mewajibkan login, tidak pernah
+     * langsung ke Drive/storage publik.
      */
     public function getFotoMasukUrlAttribute(): ?string
     {
-        if (! $this->foto_masuk) {
-            return null;
-        }
-
-        if ($this->foto_masuk_storage === 'drive') {
-            return 'https://drive.google.com/thumbnail?sz=w1000&id=' . $this->foto_masuk;
-        }
-
-        return asset('storage/' . $this->foto_masuk);
+        return $this->foto_masuk
+            ? route('absensi.foto', $this->id)
+            : null;
     }
 
     /**
@@ -57,14 +52,6 @@ class Absensi extends Model
      */
     public function getFotoMasukViewUrlAttribute(): ?string
     {
-        if (! $this->foto_masuk) {
-            return null;
-        }
-
-        if ($this->foto_masuk_storage === 'drive') {
-            return 'https://drive.google.com/file/d/' . $this->foto_masuk . '/view';
-        }
-
-        return asset('storage/' . $this->foto_masuk);
+        return $this->foto_masuk_url;
     }
 }

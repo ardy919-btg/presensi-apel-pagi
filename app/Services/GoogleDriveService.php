@@ -97,27 +97,73 @@ class GoogleDriveService
             return null;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Buat File Bisa Dilihat Lewat Link
-        |--------------------------------------------------------------------------
-        |
-        | Default file baru bersifat privat (cuma akun pemilik Drive yang bisa
-        | akses). Tanpa ini, admin yang browsernya TIDAK login sebagai akun
-        | Drive itu akan gagal melihat foto selfie di halaman detail absensi.
-        | Best-effort -- kalau gagal, file tetap ada, cuma belum bisa dilihat.
-        |
-        */
+        return $fileId;
+    }
 
-        Http::withToken($accessToken)->post(
+    /**
+     * Unduh isi file dari Drive. File tetap privat; aplikasi yang
+     * menyajikannya ke pengguna yang sudah login (lihat AbsensiFotoController).
+     *
+     * @return array{0: string, 1: string}|null [isi biner, mime type]
+     */
+    public function download(string $fileId): ?array
+    {
+        $accessToken = $this->configured() ? $this->accessToken() : null;
+
+        if (! $accessToken) {
+            return null;
+        }
+
+        $response = Http::withToken($accessToken)
+            ->get('https://www.googleapis.com/drive/v3/files/' . $fileId . '?alt=media');
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        return [
+            $response->body(),
+            $response->header('Content-Type') ?: 'image/jpeg',
+        ];
+    }
+
+    /**
+     * Cabut izin "siapa saja dengan link" dari 1 file. Mengembalikan
+     * true kalau file kini privat (termasuk kalau memang sudah privat).
+     */
+    public function cabutAksesPublik(string $fileId): bool
+    {
+        $accessToken = $this->configured() ? $this->accessToken() : null;
+
+        if (! $accessToken) {
+            return false;
+        }
+
+        $list = Http::withToken($accessToken)->get(
             'https://www.googleapis.com/drive/v3/files/' . $fileId . '/permissions',
-            [
-                'role' => 'reader',
-                'type' => 'anyone',
-            ]
+            ['fields' => 'permissions(id,type)']
         );
 
-        return $fileId;
+        if (! $list->successful()) {
+            return false;
+        }
+
+        foreach ($list->json('permissions', []) as $izin) {
+
+            if (($izin['type'] ?? null) === 'anyone') {
+
+                $hapus = Http::withToken($accessToken)->delete(
+                    'https://www.googleapis.com/drive/v3/files/' . $fileId
+                    . '/permissions/' . $izin['id']
+                );
+
+                if (! $hapus->successful()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
