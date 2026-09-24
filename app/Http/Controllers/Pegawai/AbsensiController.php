@@ -431,10 +431,13 @@ class AbsensiController extends Controller
         | Waktu Mulai Apel
         |--------------------------------------------------------------------------
         |
-        | ATTENDANCE_START_TIME = 07:30
+        | ATTENDANCE_START_TIME = 07:30 (yang ditampilkan ke pegawai)
         |
-        | Sampai pukul 07:30:00 = Hadir
-        | Setelah pukul 07:30:00 = Terlambat
+        | Ada toleransi (default 1 menit) karena pegawai kadang baru dapat
+        | jaringan tepat jam 07:30:
+        |
+        | Sebelum 07:31:00 = Hadir
+        | Mulai 07:31:00   = Terlambat
         |
         */
 
@@ -445,6 +448,9 @@ class AbsensiController extends Controller
             ->copy()
             ->setTimeFromTimeString(
                 $jamApel
+            )
+            ->addMinutes(
+                (int) config('attendance.late_tolerance_minutes', 1)
             );
 
 
@@ -454,7 +460,7 @@ class AbsensiController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $status = $now->greaterThan(
+        $status = $now->greaterThanOrEqualTo(
             $batasTerlambat
         )
             ? 'terlambat'

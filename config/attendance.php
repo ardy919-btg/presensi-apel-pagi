@@ -25,6 +25,13 @@ return [
 
     'end_time' => env('ATTENDANCE_END_TIME', '07:45'),
 
+    /*
+    | Toleransi keterlambatan (menit) di atas start_time. Hanya memengaruhi
+    | penentuan status di backend; jam yang ditampilkan tetap start_time.
+    */
+
+    'late_tolerance_minutes' => env('ATTENDANCE_LATE_TOLERANCE_MINUTES', 1),
+
 
     /*
     |--------------------------------------------------------------------------
