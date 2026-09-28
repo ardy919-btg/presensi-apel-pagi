@@ -218,6 +218,135 @@
 
 
             {{-- ========================= --}}
+            {{-- BATAS ABSEN (BISA DIATUR) --}}
+            {{-- ========================= --}}
+
+            <div
+                class="mb-8 rounded-xl border border-indigo-200
+                       bg-indigo-50 p-5
+                       dark:border-indigo-800 dark:bg-indigo-900/20"
+            >
+
+                <div
+                    class="flex flex-col lg:flex-row
+                           lg:items-end lg:justify-between
+                           gap-4"
+                >
+
+                    <div>
+
+                        <h3 class="font-semibold text-indigo-800 dark:text-indigo-300">
+                            Batas Absen Apel Pagi
+                        </h3>
+
+                        <p class="mt-1 text-sm text-indigo-700 dark:text-indigo-400">
+                            Saat ini absensi ditutup pukul
+                            <span class="font-semibold">{{ $jamTutupSaatIni }} WITA</span>.
+
+                            @if($jamTutupManual)
+                                Ini adalah jam tutup yang diperpanjang manual.
+                            @else
+                                Ini jadwal default sistem.
+                            @endif
+
+                            Ubah di bawah kalau ada pegawai yang belum
+                            sempat absen dan waktunya perlu diperpanjang.
+                        </p>
+
+                    </div>
+
+
+                    <div class="flex flex-wrap items-end gap-3">
+
+                        <form
+                            method="POST"
+                            action="{{ route('admin.dashboard.batas-absen.update') }}"
+                            class="flex flex-wrap items-end gap-3"
+                        >
+
+                            @csrf
+                            @method('PUT')
+
+                            <div>
+
+                                <label
+                                    for="jam_tutup_manual"
+                                    class="block mb-1 text-xs font-medium
+                                           text-indigo-700 dark:text-indigo-400"
+                                >
+                                    Jam Tutup Baru
+                                </label>
+
+                                <input
+                                    type="time"
+                                    id="jam_tutup_manual"
+                                    name="jam_tutup_manual"
+                                    value="{{ old('jam_tutup_manual', $jamTutupManual) }}"
+                                    class="rounded-lg
+                                           border-gray-300
+                                           dark:border-gray-600
+                                           dark:bg-gray-800
+                                           dark:text-white
+                                           focus:border-indigo-500
+                                           focus:ring-indigo-500"
+                                >
+
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="px-4 py-2
+                                       bg-indigo-600 hover:bg-indigo-700
+                                       text-white text-sm font-semibold
+                                       rounded-lg transition"
+                            >
+                                Simpan
+                            </button>
+
+                        </form>
+
+                        @if($jamTutupManual)
+
+                            <form
+                                method="POST"
+                                action="{{ route('admin.dashboard.batas-absen.update') }}"
+                            >
+
+                                @csrf
+                                @method('PUT')
+
+                                <input type="hidden" name="jam_tutup_manual" value="">
+
+                                <button
+                                    type="submit"
+                                    class="px-4 py-2
+                                           bg-white hover:bg-gray-50
+                                           dark:bg-gray-800 dark:hover:bg-gray-700
+                                           text-gray-700 dark:text-gray-200
+                                           text-sm font-semibold
+                                           border border-gray-300 dark:border-gray-600
+                                           rounded-lg transition"
+                                >
+                                    Kembalikan ke Default
+                                </button>
+
+                            </form>
+
+                        @endif
+
+                    </div>
+
+                </div>
+
+                <x-input-error
+                    class="mt-2"
+                    :messages="$errors->get('jam_tutup_manual')"
+                />
+
+            </div>
+
+
+            {{-- ========================= --}}
             {{-- INFORMASI WAKTU APEL --}}
             {{-- ========================= --}}
 

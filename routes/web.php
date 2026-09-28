@@ -109,6 +109,12 @@ Route::middleware([
         )->name('dashboard');
 
 
+        Route::put(
+            '/dashboard/batas-absen',
+            [DashboardController::class, 'updateBatasAbsen']
+        )->name('dashboard.batas-absen.update');
+
+
         /*
         |--------------------------------------------------------------------------
         | Data Pegawai

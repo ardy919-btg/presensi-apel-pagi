@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\AttendanceTime;
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
+use App\Models\AttendanceSetting;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -298,6 +301,17 @@ class DashboardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Batas Absen Saat Ini
+        |--------------------------------------------------------------------------
+        */
+
+        $jamTutupSaatIni = AttendanceTime::jamSelesai();
+
+        $jamTutupManual = AttendanceSetting::current()->jam_tutup_manual;
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Tampilkan Dashboard
         |--------------------------------------------------------------------------
         */
@@ -316,8 +330,48 @@ class DashboardController extends Controller
                 'alphaHariIni',
                 'belumAbsen',
                 'absensiTerbaru',
-                'isSenin'
+                'isSenin',
+                'jamTutupSaatIni',
+                'jamTutupManual'
             )
         );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Simpan / Hapus Batas Absen Manual
+    |--------------------------------------------------------------------------
+    |
+    | Memungkinkan admin memperpanjang atau mengubah jam tutup absensi
+    | langsung dari Dashboard, termasuk untuk hari yang sedang berjalan,
+    | tanpa perlu akses server. Kosongkan untuk kembali ke jadwal default.
+    |
+    */
+
+    public function updateBatasAbsen(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'jam_tutup_manual' => [
+                'nullable',
+                'date_format:H:i',
+            ],
+        ], [
+            'jam_tutup_manual.date_format' => 'Format jam tidak valid.',
+        ]);
+
+        AttendanceSetting::current()->update([
+            'jam_tutup_manual' => $validated['jam_tutup_manual'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('admin.dashboard')
+            ->with(
+                'success',
+                $validated['jam_tutup_manual']
+                    ? 'Batas absen berhasil diperpanjang sampai pukul '
+                        . $validated['jam_tutup_manual'] . ' WITA.'
+                    : 'Batas absen dikembalikan ke jadwal default.'
+            );
     }
 }

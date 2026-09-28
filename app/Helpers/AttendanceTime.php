@@ -101,8 +101,11 @@ class AttendanceTime
     }
 
     /**
-     * Jam tutup Apel Pagi -- pakai jam simulasi jika diisi admin,
-     * kalau tidak pakai konfigurasi default (.env).
+     * Jam tutup Apel Pagi. Urutan prioritas:
+     * 1. Jam simulasi (kalau mode simulasi sedang berlaku)
+     * 2. Jam tutup manual yang diatur admin lewat Dashboard (berlaku terus,
+     *    termasuk untuk hari yang sedang berjalan, sampai diubah/dikosongkan)
+     * 3. Konfigurasi default (.env)
      */
     public static function jamSelesai(): string
     {
@@ -110,6 +113,12 @@ class AttendanceTime
 
         if ($simulasi && $simulasi->simulasi_jam_selesai) {
             return substr($simulasi->simulasi_jam_selesai, 0, 5);
+        }
+
+        $manual = AttendanceSetting::current()->jam_tutup_manual;
+
+        if ($manual) {
+            return substr($manual, 0, 5);
         }
 
         return config('attendance.end_time', '07:45');
