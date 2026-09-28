@@ -72,7 +72,6 @@ class PegawaiImport implements ToCollection, WithHeadingRow
                     'role' => 'pegawai',
                     'status' => 'aktif',
                     'password' => User::passwordDefault(),
-                    'must_change_password' => true,
                 ]));
             }
         }

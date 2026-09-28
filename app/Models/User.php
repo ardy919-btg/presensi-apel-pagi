@@ -34,7 +34,6 @@ class User extends Authenticatable
     'role',
     'status',
     'password',
-    'must_change_password',
 ];
     /**
      * The attributes that should be hidden for serialization.
@@ -57,7 +56,6 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'tanggal_lahir' => 'date',
             'password' => 'hashed',
-            'must_change_password' => 'boolean',
         ];
     }
 

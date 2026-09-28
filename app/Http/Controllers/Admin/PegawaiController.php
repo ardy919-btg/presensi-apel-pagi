@@ -553,7 +553,6 @@ class PegawaiController extends Controller
 
         $pegawai->update([
             'password' => User::passwordDefault(),
-            'must_change_password' => true,
         ]);
 
 
