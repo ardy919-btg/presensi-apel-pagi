@@ -27,21 +27,19 @@ Artisan::command('inspire', function () {
 | Alpha Otomatis Apel Pagi
 |--------------------------------------------------------------------------
 |
-| Setiap hari Senin pukul 07:45 WITA,
-| sistem menjalankan command apel:generate-alpha.
+| Jalan tiap menit di hari Senin -- command itu sendiri yang menentukan
+| apakah sudah lewat jam tutup (lihat GenerateAlphaApel::handle()), supaya
+| perpanjangan batas absen dari Dashboard Admin ikut terbaca. Jangan pakai
+| ->at() dengan jam tetap di sini karena tidak akan mengikuti perpanjangan
+| itu.
 |
 */
 
 Schedule::command(
     'apel:generate-alpha'
 )
+    ->everyMinute()
     ->mondays()
-    ->at(
-        config(
-            'attendance.end_time',
-            '07:45'
-        )
-    )
     ->timezone(
         'Asia/Makassar'
     )

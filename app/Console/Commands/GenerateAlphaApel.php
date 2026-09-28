@@ -40,6 +40,33 @@ class GenerateAlphaApel extends Command
 
         /*
         |--------------------------------------------------------------------------
+        | Pastikan Sudah Lewat Jam Tutup
+        |--------------------------------------------------------------------------
+        |
+        | Dicek di sini (bukan cuma lewat jadwal cron) supaya perpanjangan
+        | batas absen dari Dashboard Admin (jam_tutup_manual) benar-benar
+        | dihormati -- kalau cron jalan sebelum jam tutup yang berlaku saat
+        | ini, jangan tandai siapa pun Alpha dulu.
+        |
+        */
+
+        $batasAbsensi = $today
+            ->copy()
+            ->setTimeFromTimeString(
+                AttendanceTime::jamSelesai()
+            );
+
+        if (AttendanceTime::now()->lessThan($batasAbsensi)) {
+            $this->info(
+                'Belum lewat jam tutup absen (' . $batasAbsensi->format('H:i') . '), belum ada yang ditandai Alpha.'
+            );
+
+            return self::SUCCESS;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Cari Pegawai Aktif Yang Belum Memiliki Absensi
         |--------------------------------------------------------------------------
         */
