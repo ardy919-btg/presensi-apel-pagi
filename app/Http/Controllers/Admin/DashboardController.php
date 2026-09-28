@@ -309,6 +309,10 @@ class DashboardController extends Controller
 
         $jamTutupManual = AttendanceSetting::current()->jam_tutup_manual;
 
+        $jamTerlambatSaatIni = AttendanceTime::jamMulai();
+
+        $jamTerlambatManual = AttendanceSetting::current()->jam_terlambat_manual;
+
 
         /*
         |--------------------------------------------------------------------------
@@ -332,7 +336,9 @@ class DashboardController extends Controller
                 'absensiTerbaru',
                 'isSenin',
                 'jamTutupSaatIni',
-                'jamTutupManual'
+                'jamTutupManual',
+                'jamTerlambatSaatIni',
+                'jamTerlambatManual'
             )
         );
     }
@@ -372,6 +378,45 @@ class DashboardController extends Controller
                     ? 'Batas absen berhasil diperpanjang sampai pukul '
                         . $validated['jam_tutup_manual'] . ' WITA.'
                     : 'Batas absen dikembalikan ke jadwal default.'
+            );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Simpan / Hapus Batas Terlambat Manual
+    |--------------------------------------------------------------------------
+    |
+    | Melonggarkan batas Hadir/Terlambat untuk hari yang sedang berjalan,
+    | mis. sebagai kompensasi saat ada gangguan yang menyebabkan pegawai
+    | telat absen bukan karena kesalahan mereka. Kosongkan untuk kembali
+    | ke jadwal default.
+    |
+    */
+
+    public function updateBatasTerlambat(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'jam_terlambat_manual' => [
+                'nullable',
+                'date_format:H:i',
+            ],
+        ], [
+            'jam_terlambat_manual.date_format' => 'Format jam tidak valid.',
+        ]);
+
+        AttendanceSetting::current()->update([
+            'jam_terlambat_manual' => $validated['jam_terlambat_manual'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('admin.dashboard')
+            ->with(
+                'success',
+                $validated['jam_terlambat_manual']
+                    ? 'Batas terlambat berhasil diperpanjang sampai pukul '
+                        . $validated['jam_terlambat_manual'] . ' WITA.'
+                    : 'Batas terlambat dikembalikan ke jadwal default.'
             );
     }
 }

@@ -16,6 +16,7 @@ class AttendanceSetting extends Model
         'office_longitude',
         'office_radius',
         'jam_tutup_manual',
+        'jam_terlambat_manual',
         'retensi_jumlah_absen',
     ];
 

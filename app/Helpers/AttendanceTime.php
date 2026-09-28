@@ -86,8 +86,9 @@ class AttendanceTime
     }
 
     /**
-     * Jam mulai Apel Pagi -- pakai jam simulasi jika diisi admin,
-     * kalau tidak pakai konfigurasi default (.env).
+     * Jam mulai Apel Pagi (dipakai sebagai batas Hadir/Terlambat). Urutan
+     * prioritas sama seperti jamSelesai(): simulasi, lalu batas terlambat
+     * manual yang diatur admin lewat Dashboard, baru konfigurasi default.
      */
     public static function jamMulai(): string
     {
@@ -95,6 +96,12 @@ class AttendanceTime
 
         if ($simulasi && $simulasi->simulasi_jam_mulai) {
             return substr($simulasi->simulasi_jam_mulai, 0, 5);
+        }
+
+        $manual = AttendanceSetting::current()->jam_terlambat_manual;
+
+        if ($manual) {
+            return substr($manual, 0, 5);
         }
 
         return config('attendance.start_time', '07:30');

@@ -115,6 +115,12 @@ Route::middleware([
         )->name('dashboard.batas-absen.update');
 
 
+        Route::put(
+            '/dashboard/batas-terlambat',
+            [DashboardController::class, 'updateBatasTerlambat']
+        )->name('dashboard.batas-terlambat.update');
+
+
         /*
         |--------------------------------------------------------------------------
         | Data Pegawai
