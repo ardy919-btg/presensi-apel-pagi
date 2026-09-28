@@ -622,4 +622,40 @@ class AbsensiController extends Controller
             )
         );
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Kompensasi Keterlambatan
+    |--------------------------------------------------------------------------
+    |
+    | Untuk pegawai yang telat absen bukan karena kesalahan mereka sendiri
+    | (mis. gangguan aplikasi/jaringan). Status diubah jadi Hadir dan jam
+    | masuk digeser ke rentang tepat waktu (07:25-07:30) pada tanggal
+    | absensi itu sendiri, konsisten dengan kompensasi 2026-09-28.
+    |
+    */
+
+    public function kompensasiTerlambat(Absensi $absensi)
+    {
+        if ($absensi->status !== 'terlambat' || $absensi->is_simulasi) {
+            abort(403);
+        }
+
+        $jamBaru = \Carbon\Carbon::parse($absensi->tanggal)
+            ->setTime(7, 25)
+            ->addSeconds(random_int(0, 300));
+
+        $absensi->update([
+            'status' => 'hadir',
+            'jam_masuk' => $jamBaru->format('H:i:s'),
+        ]);
+
+        return redirect()
+            ->route('admin.absensi.show', $absensi->id)
+            ->with(
+                'success',
+                'Keterlambatan berhasil dikompensasi, status diubah jadi Hadir.'
+            );
+    }
 }

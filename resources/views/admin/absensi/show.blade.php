@@ -524,6 +524,39 @@
 
                             @endif
 
+
+                            @if($absensi->status === 'terlambat' && !$absensi->is_simulasi)
+
+                                <form
+                                    method="POST"
+                                    action="{{ route('admin.absensi.kompensasi-terlambat', $absensi->id) }}"
+                                    class="mt-3"
+                                    data-confirm="Ubah status jadi Hadir dan geser jam masuk ke rentang 07:25-07:30? Pakai ini kalau keterlambatan bukan kesalahan pegawai (mis. gangguan aplikasi/jaringan)."
+                                    data-confirm-title="Kompensasi Keterlambatan"
+                                    data-confirm-text="Ya, Kompensasi"
+                                    data-confirm-variant="default"
+                                >
+
+                                    @csrf
+                                    @method('PUT')
+
+                                    <button
+                                        type="submit"
+                                        class="inline-flex items-center gap-1.5
+                                               px-3 py-1.5
+                                               text-xs font-semibold
+                                               bg-indigo-600 hover:bg-indigo-700
+                                               text-white
+                                               rounded-lg
+                                               transition"
+                                    >
+                                        Kompensasi Keterlambatan
+                                    </button>
+
+                                </form>
+
+                            @endif
+
                         </div>
 
                     </div>

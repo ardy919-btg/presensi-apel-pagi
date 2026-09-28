@@ -195,6 +195,12 @@ Route::middleware([
         )->name('absensi.show');
 
 
+        Route::put(
+            '/absensi/{absensi}/kompensasi-terlambat',
+            [AdminAbsensiController::class, 'kompensasiTerlambat']
+        )->name('absensi.kompensasi-terlambat');
+
+
         /*
         |--------------------------------------------------------------------------
         | Simulasi Apel Pagi (Uji Coba Di Luar Hari Senin)
