@@ -1041,16 +1041,6 @@
                                 <div id="google-signin-button"></div>
                             </div>
 
-                            <form
-                                id="google-login-form"
-                                method="POST"
-                                action="{{ route('login.google') }}"
-                                class="hidden"
-                            >
-                                @csrf
-                                <input type="hidden" name="credential" id="google-credential">
-                            </form>
-
                             <script src="https://accounts.google.com/gsi/client?hl=id" async defer></script>
                             <script>
                                 window.addEventListener('load', function () {
@@ -1141,6 +1131,32 @@
                         </div>
 
                     </form>
+
+
+                    @if(config('services.google.client_id'))
+
+                        {{-- ====================================================== --}}
+                        {{-- FORM LOGIN GOOGLE --}}
+                        {{-- ====================================================== --}}
+                        {{--
+                            Sengaja diletakkan DI LUAR form login utama di atas.
+                            Form tidak boleh bersarang di dalam form lain --
+                            kalau bersarang, browser akan membuang elemen form
+                            ini dari DOM sehingga submit() dari callback Google
+                            gagal dengan "Cannot read properties of null".
+                        --}}
+
+                        <form
+                            id="google-login-form"
+                            method="POST"
+                            action="{{ route('login.google') }}"
+                            class="hidden"
+                        >
+                            @csrf
+                            <input type="hidden" name="credential" id="google-credential">
+                        </form>
+
+                    @endif
 
 
                     {{-- ====================================================== --}}
