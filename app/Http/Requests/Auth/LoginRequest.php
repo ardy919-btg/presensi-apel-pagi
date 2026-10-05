@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Helpers\AttendanceTime;
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -34,7 +36,7 @@ class LoginRequest extends FormRequest
             ],
 
             'password' => [
-                'required',
+                AttendanceTime::loginTanpaPasswordHariIni() ? 'nullable' : 'required',
                 'string',
             ],
         ];
@@ -77,10 +79,45 @@ class LoginRequest extends FormRequest
         ];
 
 
-        if (! Auth::attempt(
+        $berhasil = filled($this->input('password')) && Auth::attempt(
             $credentials,
             $this->boolean('remember')
-        )) {
+        );
+
+        $this->session()->forget('login_tanpa_password');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login Pegawai Tanpa Password (Khusus Hari Senin)
+        |--------------------------------------------------------------------------
+        |
+        | Kalau admin mematikan "Hari Senin Pegawai Wajib Input Password",
+        | pegawai aktif cukup dikenali lewat NIP/email/nama; password yang
+        | salah (mis. terisi otomatis dari situs lain) diabaikan. Admin
+        | tidak pernah lewat jalur ini.
+        |
+        */
+
+        if (! $berhasil && AttendanceTime::loginTanpaPasswordHariIni()) {
+
+            $pegawai = $this->cariPegawaiAktif($login);
+
+            if ($pegawai) {
+
+                Auth::login(
+                    $pegawai,
+                    $this->boolean('remember')
+                );
+
+                $this->session()->put('login_tanpa_password', true);
+
+                $berhasil = true;
+            }
+        }
+
+
+        if (! $berhasil) {
 
             RateLimiter::hit(
                 $this->throttleKey()
@@ -111,6 +148,36 @@ class LoginRequest extends FormRequest
         RateLimiter::clear(
             $this->throttleKey()
         );
+    }
+
+    /**
+     * Cari pegawai aktif dari NIP, email, atau nama persis (nama hanya
+     * dipakai kalau tepat satu pegawai aktif yang memakai nama itu).
+     */
+    private function cariPegawaiAktif(string $login): ?User
+    {
+        $query = fn () => User::where('role', 'pegawai')
+            ->where('status', 'aktif');
+
+        $pegawai = $query()
+            ->where(function ($q) use ($login) {
+                $q->where('nip', $login)
+                    ->orWhere('email', $login);
+            })
+            ->first();
+
+        if ($pegawai) {
+            return $pegawai;
+        }
+
+        $samaNama = $query()
+            ->where('name', $login)
+            ->limit(2)
+            ->get();
+
+        return $samaNama->count() === 1
+            ? $samaNama->first()
+            : null;
     }
 
     /**

@@ -203,6 +203,31 @@ class SimulasiController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | Simpan Pengaturan Password Login Hari Senin
+    |--------------------------------------------------------------------------
+    */
+
+    public function updateLoginSenin(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'senin_wajib_password' => ['required', 'boolean'],
+        ]);
+
+        AttendanceSetting::current()->update($validated);
+
+        return redirect()
+            ->route('admin.simulasi.edit')
+            ->with(
+                'success',
+                $validated['senin_wajib_password']
+                    ? 'Pegawai kembali wajib input password setiap hari.'
+                    : 'Khusus hari Senin, pegawai bisa login tanpa password.'
+            );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Simpan Retensi Data Absensi
     |--------------------------------------------------------------------------
     */

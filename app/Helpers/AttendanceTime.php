@@ -55,6 +55,17 @@ class AttendanceTime
         return self::today()->isMonday() || self::simulasiAktif();
     }
 
+    /**
+     * Apakah pegawai boleh login tanpa password hari ini: hanya hari
+     * Senin, dan hanya kalau admin mematikan "Hari Senin Pegawai Wajib
+     * Input Password". Tidak pernah berlaku untuk admin.
+     */
+    public static function loginTanpaPasswordHariIni(): bool
+    {
+        return self::today()->isMonday()
+            && AttendanceSetting::current()->senin_wajib_password === false;
+    }
+
     public static function now(): Carbon
     {
         /*

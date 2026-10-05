@@ -17,6 +17,7 @@ class AttendanceSetting extends Model
         'office_radius',
         'jam_tutup_manual',
         'jam_terlambat_manual',
+        'senin_wajib_password',
         'retensi_jumlah_absen',
     ];
 
@@ -24,6 +25,7 @@ class AttendanceSetting extends Model
     {
         return [
             'simulasi_aktif' => 'boolean',
+            'senin_wajib_password' => 'boolean',
             'simulasi_tanggal_mulai' => 'date',
             'simulasi_tanggal_selesai' => 'date',
         ];

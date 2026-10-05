@@ -736,7 +736,7 @@
                                     id="password"
                                     :type="showPassword ? 'text' : 'password'"
                                     name="password"
-                                    required
+                                    @unless(\App\Helpers\AttendanceTime::loginTanpaPasswordHariIni()) required @endunless
                                     autocomplete="current-password"
                                     placeholder="Masukkan password"
                                     class="

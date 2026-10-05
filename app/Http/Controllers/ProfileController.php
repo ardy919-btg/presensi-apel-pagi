@@ -39,6 +39,25 @@ class ProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Sesi Masuk Tanpa Password Tidak Boleh Mengubah Profil
+        |--------------------------------------------------------------------------
+        |
+        | Sesi ini cuma bermodal NIP/nama. Kalau boleh mengubah email, orang
+        | lain bisa mengganti email pegawai dengan akun Google miliknya lalu
+        | masuk sebagai pegawai itu di hari lain lewat Login Google.
+        |
+        */
+
+        if ($request->session()->get('login_tanpa_password')) {
+            return Redirect::route('profile.edit')->with(
+                'warning',
+                'Untuk mengubah profil, silakan logout lalu login memakai password.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Update Data Yang Sudah Divalidasi
         |--------------------------------------------------------------------------
         */

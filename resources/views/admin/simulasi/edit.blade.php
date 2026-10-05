@@ -525,6 +525,78 @@
 
 
             {{-- ========================= --}}
+            {{-- PASSWORD LOGIN HARI SENIN --}}
+            {{-- ========================= --}}
+
+            <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                    Password Login Hari Senin
+                </h3>
+
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Kalau dimatikan, khusus hari Senin pegawai aktif cukup
+                    mengisi NIP/nama untuk masuk; password tidak dicek
+                    (password yang salah atau terisi otomatis diabaikan).
+                    Hari lain tetap wajib password, dan admin selalu wajib
+                    password. Selama masuk tanpa password, pegawai tidak
+                    bisa mengubah profilnya.
+                </p>
+
+                <form
+                    method="POST"
+                    action="{{ route('admin.pengaturan.login-senin.update') }}"
+                    class="mt-4 space-y-4"
+                >
+
+                    @csrf
+                    @method('PUT')
+
+                    <label class="inline-flex items-center gap-3 cursor-pointer">
+
+                        <input type="hidden" name="senin_wajib_password" value="0">
+
+                        <input
+                            type="checkbox"
+                            name="senin_wajib_password"
+                            value="1"
+                            class="peer sr-only"
+                            @checked($pengaturan->senin_wajib_password !== false)
+                        >
+
+                        <span
+                            class="relative inline-block w-11 h-6 shrink-0
+                                   rounded-full bg-gray-300 dark:bg-gray-600
+                                   transition-colors
+                                   peer-checked:bg-indigo-600
+                                   peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-focus-visible:ring-offset-2
+                                   after:content-[''] after:absolute after:top-0.5 after:left-0.5
+                                   after:w-5 after:h-5 after:rounded-full after:bg-white after:shadow
+                                   after:transition-transform
+                                   peer-checked:after:translate-x-5"
+                        ></span>
+
+                        <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            Hari Senin Pegawai Wajib Input Password untuk Login Aplikasi
+                        </span>
+
+                    </label>
+
+                    <div>
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition"
+                        >
+                            Simpan
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            {{-- ========================= --}}
             {{-- RETENSI DATA ABSENSI --}}
             {{-- ========================= --}}
 

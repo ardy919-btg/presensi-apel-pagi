@@ -234,6 +234,11 @@ Route::middleware([
         )->name('pengaturan.lokasi.update');
 
         Route::put(
+            '/pengaturan/login-senin',
+            [SimulasiController::class, 'updateLoginSenin']
+        )->name('pengaturan.login-senin.update');
+
+        Route::put(
             '/pengaturan/retensi',
             [SimulasiController::class, 'updateRetensi']
         )->name('pengaturan.retensi.update');
